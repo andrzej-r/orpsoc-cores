@@ -29,14 +29,39 @@ module wb_data_resize
     input 	     wbs_rty_i);
 
    assign wbs_adr_o[aw-1:2] = wbm_adr_i[aw-1:2];
-   assign wbs_adr_o[1:0] = wbm_sel_i[3] ? 2'd0 :
-			   wbm_sel_i[2] ? 2'd1 :
-			   wbm_sel_i[1] ? 2'd2 : 2'd3;
-   assign wbs_dat_o = wbm_sel_i[3] ? wbm_dat_i[31:24] :
-		      wbm_sel_i[2] ? wbm_dat_i[23:16] :
-		      wbm_sel_i[1] ? wbm_dat_i[15:8]  :
-		      wbm_sel_i[0] ? wbm_dat_i[7:0]   : 8'b0;
-   
+
+   reg [1:0] wbs_adr_o2;
+   always @(*)
+     case (wbm_sel_i)
+       4'b1000: wbs_adr_o2 = 2'd0; // 8b access
+       4'b1100: wbs_adr_o2 = 2'd0; //16b access
+       4'b1111: wbs_adr_o2 = 2'd0; //32b access
+       4'b0100: wbs_adr_o2 = 2'd1; // 8b access
+       4'b0010: wbs_adr_o2 = 2'd2; // 8b access
+       4'b0011: wbs_adr_o2 = 2'd2; //16b access
+       4'b0001: wbs_adr_o2 = 2'd3; // 8b access
+       default: wbs_adr_o2 = 2'd0; // unaligned access
+     endcase // case (wbm_sel_i)
+   assign wbs_adr_o[1:0] = wbs_adr_o2;
+
+   reg [31:0] wbs_dat_o32;
+   reg [31:0] wbm_dat_i32;
+   always @(*) begin
+      wbs_dat_o32 = 32'b0;
+      wbm_dat_i32 = 32'b0;
+      wbm_dat_i32[mdw-1:0] = wbm_dat_i; // extended to 32b
+      case (wbm_sel_i)
+        4'b1000: wbs_dat_o32[ 7:0] = wbm_dat_i32[31:24]; // 8b access
+        4'b1100: wbs_dat_o32[15:0] = wbm_dat_i32[31:16]; //16b access
+        4'b1111: wbs_dat_o32[31:0] = wbm_dat_i32[31: 0]; //32b access
+        4'b0100: wbs_dat_o32[ 7:0] = wbm_dat_i32[23:16]; // 8b access
+        4'b0010: wbs_dat_o32[ 7:0] = wbm_dat_i32[15: 8]; // 8b access
+        4'b0011: wbs_dat_o32[15:0] = wbm_dat_i32[15: 0]; //16b access
+        4'b0001: wbs_dat_o32[ 7:0] = wbm_dat_i32[ 7: 0]; // 8b access
+      endcase // case (wbm_sel_i)
+   end
+   assign wbs_dat_o = wbs_dat_o32[sdw-1:0];
+
    assign wbs_we_o  = wbm_we_i;
 
    assign wbs_cyc_o = wbm_cyc_i;
@@ -44,11 +69,25 @@ module wb_data_resize
    
    assign wbs_cti_o = wbm_cti_i;
    assign wbs_bte_o = wbm_bte_i;
-   
-   assign wbm_dat_o = (wbm_sel_i[3]) ? {wbs_dat_i, 24'd0} :
-		      (wbm_sel_i[2]) ? {8'd0 , wbs_dat_i, 16'd0} :
-		      (wbm_sel_i[1]) ? {16'd0, wbs_dat_i, 8'd0} :
-	              {24'd0, wbs_dat_i};
+
+   reg [31:0] wbm_dat_o32;
+   reg [31:0] wbs_dat_i32;
+   always @(*) begin
+      wbm_dat_o32 = 32'b0;
+      wbs_dat_i32 = 32'b0;
+      wbs_dat_i32[sdw-1:0] = wbs_dat_i; // extended to 32b
+      case (wbm_sel_i)
+        4'b1000: wbm_dat_o32[ 7:0] = wbs_dat_i32[31:24]; // 8b access
+        4'b1100: wbm_dat_o32[15:0] = wbs_dat_i32[31:16]; //16b access
+        4'b1111: wbm_dat_o32[31:0] = wbs_dat_i32[31: 0]; //32b access
+        4'b0100: wbm_dat_o32[ 7:0] = wbs_dat_i32[23:16]; // 8b access
+        4'b0010: wbm_dat_o32[ 7:0] = wbs_dat_i32[15: 8]; // 8b access
+        4'b0011: wbm_dat_o32[15:0] = wbs_dat_i32[15: 0]; //16b access
+        4'b0001: wbm_dat_o32[ 7:0] = wbs_dat_i32[ 7: 0]; // 8b access
+      endcase // case (wbm_sel_i)
+   end
+   assign wbm_dat_o = wbm_dat_o32[mdw-1:0];
+
    assign wbm_ack_o = wbs_ack_i;
    assign wbm_err_o = wbs_err_i;
    assign wbm_rty_o = wbs_rty_i;
