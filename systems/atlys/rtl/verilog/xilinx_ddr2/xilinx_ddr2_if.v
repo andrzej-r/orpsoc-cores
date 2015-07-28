@@ -871,7 +871,7 @@ module wb_to_userport (
    
    always @(posedge wb_clk) begin
       wb_ack_write <= ddr2_px_wr_en;/*wb_req & wb_we_i & !wb_ack_write & !ddr2_px_wr_full &
-		      !ddr2_px_cmd_full*/;
+		      !ddr2_px_cmd_full*/
    end
    
    
