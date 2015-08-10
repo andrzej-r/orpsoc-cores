@@ -1,0 +1,9 @@
+CAPI=1
+[main]
+description = Multiplexed seven-segment LED display controller
+
+[verilog]
+src_files =
+ wb_sseg_ctrl.v
+ sseg_ctrl.v
+
