@@ -4,6 +4,11 @@ description = Multiplexed seven-segment LED display controller
 
 [verilog]
 src_files =
- wb_sseg_ctrl.v
- sseg_ctrl.v
+ rtl/wb_sseg_ctrl.v
+ rtl/sseg_ctrl.v
 
+[provider]
+name = github
+user = andrzej-r
+repo = wb_sseg_ctrl
+version = master
