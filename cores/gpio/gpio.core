@@ -5,4 +5,4 @@ description = Simple 8-bit gpio core
 [verilog]
 src_files =
  gpio.v
- wb_gpio.v
+
