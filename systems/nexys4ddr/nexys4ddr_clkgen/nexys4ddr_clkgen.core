@@ -1,0 +1,8 @@
+CAPI=1
+[main]
+description = "Clock and reset generator for Nexys4DDR board"
+
+[verilog]
+src_files =
+ rtl/nexys4ddr_clkgen.v
+
