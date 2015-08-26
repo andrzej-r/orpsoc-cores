@@ -1,0 +1,10 @@
+CAPI=1
+[main]
+description = "Wishbone wrapper for Xilinx XADC core"
+depend =
+ nexys4ddr_xadc
+
+[verilog]
+src_files =
+ rtl/nexys4ddr_xadc_wb.v
+
