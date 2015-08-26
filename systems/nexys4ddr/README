@@ -1,0 +1,3 @@
+OpenRISC system for Digilent Nexys4 DDR development board.
+Copied from atlys project and modified for artix7 series FPGA
+and board peripherals.
