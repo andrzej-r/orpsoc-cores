@@ -1,0 +1,43 @@
+From febc3cbaa78fda9c89a215f6f0218037ea48782f Mon Sep 17 00:00:00 2001
+From: Andrzej <ndrwrdck@gmail.com>
+Date: Sat, 22 Aug 2015 18:22:34 +0100
+Subject: [PATCH 2/2] Fixes for simulation with fusesoc
+
+---
+ nexys4ddr_ddr2/example_design/sim/sim_tb_top.v | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/nexys4ddr_ddr2/example_design/sim/sim_tb_top.v b/nexys4ddr_ddr2/example_design/sim/sim_tb_top.v
+index 3f36dd7..7e11358 100644
+--- a/nexys4ddr_ddr2/example_design/sim/sim_tb_top.v
++++ b/nexys4ddr_ddr2/example_design/sim/sim_tb_top.v
+@@ -514,6 +514,8 @@ module sim_tb_top;
+ 
+ //**************************************************************************//
+ 
++   glbl glbl();
++
+   //**************************************************************************//
+   // Reset Generation
+   //**************************************************************************//
+@@ -845,7 +847,7 @@ module sim_tb_top;
+     for (r = 0; r < CS_WIDTH; r = r + 1) begin: mem_rnk
+       if(DQ_WIDTH/16) begin: mem
+         for (i = 0; i < NUM_COMP; i = i + 1) begin: gen_mem
+-          ddr2_model u_comp_ddr2
++          ddr2 u_comp_ddr2
+             (
+              .ck      (ddr2_ck_p_sdram[0+(NUM_COMP*r)]),
+              .ck_n    (ddr2_ck_n_sdram[0+(NUM_COMP*r)]),
+@@ -866,7 +868,7 @@ module sim_tb_top;
+         end
+       end
+       if (DQ_WIDTH%16) begin: gen_mem_extrabits
+-        ddr2_model u_comp_ddr2
++        ddr2 u_comp_ddr2
+           (
+            .ck      (ddr2_ck_p_sdram[0+(NUM_COMP*r)]),
+            .ck_n    (ddr2_ck_n_sdram[0+(NUM_COMP*r)]),
+-- 
+2.1.4
+

@@ -1,0 +1,55 @@
+From ebd663da12cd2dee9b1269296d7c8eba1b8e5018 Mon Sep 17 00:00:00 2001
+From: Andrzej <ndrwrdck@gmail.com>
+Date: Sat, 22 Aug 2015 17:58:57 +0100
+Subject: [PATCH 1/2] Disabled DDR2 PHY when simulating with Icarus
+
+PHY uses encrypted models of SERDES and phase interpolator
+which are not available for Icarus.
+
+Without PHY only the interface part of the DRAM controller
+can be simulated. The interface returns a constant value
+when memory read is attempted.
+---
+ .../rtl/ip_top/mig_7series_v1_9_mem_intfc.v          | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/nexys4ddr_ddr2/user_design/rtl/ip_top/mig_7series_v1_9_mem_intfc.v b/nexys4ddr_ddr2/user_design/rtl/ip_top/mig_7series_v1_9_mem_intfc.v
+index b5503d1..acb77f0 100644
+--- a/nexys4ddr_ddr2/user_design/rtl/ip_top/mig_7series_v1_9_mem_intfc.v
++++ b/nexys4ddr_ddr2/user_design/rtl/ip_top/mig_7series_v1_9_mem_intfc.v
+@@ -630,6 +630,25 @@ module mig_7series_v1_9_mem_intfc #
+   //     (@(posedge clk) (~((DRAM_TYPE == "DDR2") && ((CL - CWL) != 1))));
+ `endif
+ 
++// PHY contains encrypted modules which do not work with icarus verilog.
++// Removed the whole PHY, which means there is no DRAM when simulating the design with iverilog
++// but at least the rest of the system and a portion of the memory controller can be simulated.
++`ifdef ICARUS_SIM
++   assign rst_tg_mc = 0;
++   assign phy_mc_ctl_full = 0;
++   assign phy_mc_cmd_full = 0;
++   assign phy_mc_data_full = 0;
++   reg startup;
++   initial begin
++      startup = 1'b0;
++      #5000000; //5us wait to reset refresh circuits
++      startup = 1'b1;
++   end
++   assign init_calib_complete_w = startup; //0;//1;
++   assign init_wrcal_complete_w = startup; //0;//1;
++   assign phy_rd_data = 128'h0f0e0d0c0b0a09080706050403020100;
++   assign phy_rddata_valid = 1;
++`else
+   mig_7series_v1_9_ddr_phy_top #
+     (
+      .TCQ                (TCQ),
+@@ -864,5 +883,6 @@ module mig_7series_v1_9_mem_intfc #
+        ,.dbg_oclkdelay_calib_done   (dbg_oclkdelay_calib_done)
+ 
+       );
++`endif //  `ifndef ICARUS_SIM
+ 
+ endmodule 
+-- 
+2.1.4
+
