@@ -1,0 +1,80 @@
+From 27dca121405e06647c0a2f1397c7db540f128e0e Mon Sep 17 00:00:00 2001
+From: Andrzej <ndrwrdck@gmail.com>
+Date: Sat, 22 Aug 2015 22:30:10 +0100
+Subject: [PATCH] Fixes for fusesoc compatibility
+
+---
+ nexys4ddr_xadc.v                                     | 7 +++++--
+ nexys4ddr_xadc/example_design/nexys4ddr_xadc_exdes.v | 5 ++++-
+ nexys4ddr_xadc/simulation/nexys4ddr_xadc_tb.v        | 1 +
+ nexys4ddr_xadc/simulation/timing/nexys4ddr_xadc_tb.v | 1 +
+ 4 files changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/nexys4ddr_xadc.v b/nexys4ddr_xadc.v
+index 873e7a1..a9338d7 100755
+--- a/nexys4ddr_xadc.v
++++ b/nexys4ddr_xadc.v
+@@ -49,7 +49,10 @@
+ (* CORE_GENERATION_INFO = "nexys4ddr_xadc,xadc_wiz_v2_1,{component_name=nexys4ddr_xadc,dclk_frequency=66,enable_busy=true,enable_convst=false,enable_convstclk=false,enable_dclk=true,enable_drp=true,enable_eoc=true,enable_eos=true,enable_vbram_alaram=true,enable_vccddro_alaram=false,enable_vccpaux_alaram=false,enable_Vccint_Alaram=true,enable_Vccaux_alaram=true,enable_vccpint_alaram=false,ot_alaram=true,user_temp_alaram=true,timing_mode=continuous,channel_averaging=None,sequencer_mode=on,startup_channel_selection=simultaneous_sampling}" *)
+ 
+ 
+-module nexys4ddr_xadc
++module nexys4ddr_xadc #
++  (
++   parameter NEXYS4DDR_XADC_SIM_MONITOR_FILE = "nexys4ddr_xadc_sim.txt"
++   )
+           (
+           DADDR_IN,            // Address bus for the dynamic reconfiguration port
+           DCLK_IN,             // Clock input for the dynamic reconfiguration port
+@@ -196,7 +199,7 @@ XADC #(
+         .INIT_58(16'h5999), // VBRAM upper alarm limit
+         .INIT_5C(16'h5111),  //  VBRAM lower alarm limit
+         .SIM_DEVICE("7SERIES"),
+-        .SIM_MONITOR_FILE("nexys4ddr_xadc_sim.txt")
++        .SIM_MONITOR_FILE(NEXYS4DDR_XADC_SIM_MONITOR_FILE)
+ )
+ 
+ XADC_INST (
+diff --git a/nexys4ddr_xadc/example_design/nexys4ddr_xadc_exdes.v b/nexys4ddr_xadc/example_design/nexys4ddr_xadc_exdes.v
+index 742f24f..4583204 100755
+--- a/nexys4ddr_xadc/example_design/nexys4ddr_xadc_exdes.v
++++ b/nexys4ddr_xadc/example_design/nexys4ddr_xadc_exdes.v
+@@ -123,7 +123,10 @@ module nexys4ddr_xadc_exdes(
+     wire GND_BIT;
+     assign GND_BIT = 0;
+ 
+-nexys4ddr_xadc
++nexys4ddr_xadc #
++  (
++   .NEXYS4DDR_XADC_SIM_MONITOR_FILE("../src/nexys4ddr_xadc/nexys4ddr_xadc/simulation/timing/nexys4ddr_xadc_sim.txt")
++   )
+ xadc_wiz_inst (
+       .DADDR_IN(DADDR_IN[6:0]),
+       .DCLK_IN(DCLK_IN),
+diff --git a/nexys4ddr_xadc/simulation/nexys4ddr_xadc_tb.v b/nexys4ddr_xadc/simulation/nexys4ddr_xadc_tb.v
+index ef957a6..fb28153 100755
+--- a/nexys4ddr_xadc/simulation/nexys4ddr_xadc_tb.v
++++ b/nexys4ddr_xadc/simulation/nexys4ddr_xadc_tb.v
+@@ -105,6 +105,7 @@ module nexys4ddr_xadc_tb ();
+ 
+   wire OT_TB;
+ 
++  glbl glbl();
+ 
+ // Input clock generation
+ 
+diff --git a/nexys4ddr_xadc/simulation/timing/nexys4ddr_xadc_tb.v b/nexys4ddr_xadc/simulation/timing/nexys4ddr_xadc_tb.v
+index 39c1e3b..1ca21ac 100755
+--- a/nexys4ddr_xadc/simulation/timing/nexys4ddr_xadc_tb.v
++++ b/nexys4ddr_xadc/simulation/timing/nexys4ddr_xadc_tb.v
+@@ -109,6 +109,7 @@ module nexys4ddr_xadc_tb ();
+ 
+   wire OT_TB;
+ 
++  glbl glbl();
+ 
+ // Input clock generation
+ 
+-- 
+2.1.4
+
