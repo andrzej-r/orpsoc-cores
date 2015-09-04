@@ -1,0 +1,46 @@
+CAPI=1
+[main]
+description = "DDR2 controller for Xilinx 7-series FPGAs"
+
+depend =
+ nexys4ddr_ddr2 nexys4ddr_clkgen
+
+simulators = icarus isim xsim modelsim
+
+[verilog]
+src_files =
+ rtl/nexys4ddr_ddr2_wb.v
+ rtl/nexys4ddr_ddr2_wb_to_ui.v
+
+tb_private_src_files =
+ bench/nexys4ddr_ddr2_wb_tb.v
+ bench/ui_bfm_memory.v
+ /opt/Xilinx/14.7/ISE_DS/ISE/verilog/src/glbl.v
+
+[plusargs]
+transactions = int "Number of wishbone transactions"
+
+[simulator]
+toplevel = nexys4ddr_ddr2_wb_tb
+
+[icarus]
+iverilog_options = -DICARUS_SIM -DSIM -y /opt/Xilinx/14.7/ISE_DS/ISE/verilog/src -y /opt/Xilinx/14.7/ISE_DS/ISE/verilog/src/unisims
+depend = mt47h64m16hr-25 vlog_tb_utils wb_bfm
+
+[isim]
+isim_options = work.glbl -d ISIM_SIM -d SIM -L unisims_ver -L secureip
+depend = mt47h64m16hr-25 vlog_tb_utils wb_bfm
+
+[xsim]
+xsim_options = work.glbl -d XSIM_SIM -d SIM -L unisims_ver -L secureip
+depend = mt47h64m16hr-25 vlog_tb_utils wb_bfm
+
+[modelsim]
+vsim_options = -t 1ps
+depend = mt47h64m16hr-25 vlog_tb_utils wb_bfm
+
+#[provider]
+#name = github
+#user = andrzej-r
+#repo = wb_xilinx7_ddr2_ctrl
+#branch = master
