@@ -362,7 +362,7 @@ module nexys4ddr_ddr2_wb #
       .dw          (128),
       .aw          (27),
       .memory_file (""),
-      .mem_bytes   (32'h8000),
+      .mem_bytes   (32'h8000000),
       .verbose     (1)
       )
    ui_bfm_memory_0
