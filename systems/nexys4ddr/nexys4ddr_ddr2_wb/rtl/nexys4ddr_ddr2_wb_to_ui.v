@@ -66,6 +66,16 @@ module nexys4ddr_ddr2_wb_to_ui
     input                                        app_wdf_rdy_i
     );
 
+   function [31:0] swap_bytes;
+      input [31:0] value;
+      swap_bytes = {value[7:0], value[15:8], value[23:16], value[31:24]};
+   endfunction
+
+   function [3:0] swap_bits;
+      input [3:0] value;
+      swap_bits = {value[0], value[1], value[2], value[3]};
+   endfunction
+
    // Wishbone bursting defines
    localparam [2:0]
      WB_CLASSIC     = 3'b000,
@@ -142,7 +152,7 @@ module nexys4ddr_ddr2_wb_to_ui
    always @(*)
      begin
         app_wdf_data_tmp = 152'b0;
-        app_wdf_data_tmp[(app_addr_offs<<3) +: 32] = wb_dat_i;
+        app_wdf_data_tmp[(app_addr_offs<<3) +: 32] = swap_bytes(wb_dat_i);
      end
 
    reg [18:0] app_wdf_mask_tmp;
@@ -150,11 +160,12 @@ module nexys4ddr_ddr2_wb_to_ui
    always @(*)
      begin
         app_wdf_mask_tmp = {19{1'b1}};
-        app_wdf_mask_tmp[app_addr_offs +: 4] = ~wb_sel_i;
+        app_wdf_mask_tmp[app_addr_offs +: 4] = ~swap_bits(wb_sel_i);
      end
 
    // read data mux
-   wire [31:0] rd_data_selected = app_rd_data_i [(app_addr_offs<<3) +: 32];
+   wire [6:0] rd_app_addr_offs = {3'b000, address_burst_r[3:2], 2'b00};
+   wire [31:0] rd_data_selected = app_rd_data_i [(rd_app_addr_offs<<3) +: 32];
 
    // state machine transitions
    always @(*)
@@ -278,7 +289,7 @@ module nexys4ddr_ddr2_wb_to_ui
             STATE_READ_SEND_RD_DATA:
               begin
                  wb_ack_o       <= 1'b1;
-                 wb_dat_o       <= rd_data_selected;
+                 wb_dat_o       <= swap_bytes(rd_data_selected);
               end
             default:
               begin
