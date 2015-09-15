@@ -12,9 +12,11 @@ src_files =
  rtl/nexys4ddr_ddr2_wb.v
  rtl/nexys4ddr_ddr2_wb_to_ui.v
 
+tb_src_files =
+ bench/ui_bfm_memory.v
+
 tb_private_src_files =
  bench/nexys4ddr_ddr2_wb_tb.v
- bench/ui_bfm_memory.v
  /opt/Xilinx/14.7/ISE_DS/ISE/verilog/src/glbl.v
 
 [plusargs]
