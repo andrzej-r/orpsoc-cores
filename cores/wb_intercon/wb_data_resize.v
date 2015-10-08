@@ -51,13 +51,13 @@ module wb_data_resize
       wbm_dat_i32 = 32'b0;
       wbm_dat_i32[mdw-1:0] = wbm_dat_i; // extended to 32b
       case (wbm_sel_i)
-        4'b1000: wbs_dat_o32[ 7:0] = wbm_dat_i32[ 7:0]; // 8b access
-        4'b1100: wbs_dat_o32[15:0] = wbm_dat_i32[15:0]; //16b access
-        4'b1111: wbs_dat_o32[31:0] = wbm_dat_i32[31:0]; //32b access
-        4'b0100: wbs_dat_o32[ 7:0] = wbm_dat_i32[ 7:0]; // 8b access
-        4'b0010: wbs_dat_o32[ 7:0] = wbm_dat_i32[ 7:0]; // 8b access
-        4'b0011: wbs_dat_o32[15:0] = wbm_dat_i32[15:0]; //16b access
-        4'b0001: wbs_dat_o32[ 7:0] = wbm_dat_i32[ 7:0]; // 8b access
+        4'b1000: wbs_dat_o32[ 7:0] = wbm_dat_i32[31:24]; // 8b access
+        4'b1100: wbs_dat_o32[15:0] = wbm_dat_i32[31:16]; //16b access
+        4'b1111: wbs_dat_o32[31:0] = wbm_dat_i32[31: 0]; //32b access
+        4'b0100: wbs_dat_o32[ 7:0] = wbm_dat_i32[23:16]; // 8b access
+        4'b0010: wbs_dat_o32[ 7:0] = wbm_dat_i32[15: 8]; // 8b access
+        4'b0011: wbs_dat_o32[15:0] = wbm_dat_i32[15: 0]; //16b access
+        4'b0001: wbs_dat_o32[ 7:0] = wbm_dat_i32[ 7: 0]; // 8b access
       endcase // case (wbm_sel_i)
    end
    assign wbs_dat_o = wbs_dat_o32[sdw-1:0];
@@ -77,13 +77,13 @@ module wb_data_resize
       wbs_dat_i32 = 32'b0;
       wbs_dat_i32[sdw-1:0] = wbs_dat_i; // extended to 32b
       case (wbm_sel_i)
-        4'b1000: wbm_dat_o32[ 7:0] = wbs_dat_i32[ 7:0]; // 8b access
-        4'b1100: wbm_dat_o32[15:0] = wbs_dat_i32[15:0]; //16b access
-        4'b1111: wbm_dat_o32[31:0] = wbs_dat_i32[31:0]; //32b access
-        4'b0100: wbm_dat_o32[ 7:0] = wbs_dat_i32[ 7:0]; // 8b access
-        4'b0010: wbm_dat_o32[ 7:0] = wbs_dat_i32[ 7:0]; // 8b access
-        4'b0011: wbm_dat_o32[15:0] = wbs_dat_i32[15:0]; //16b access
-        4'b0001: wbm_dat_o32[ 7:0] = wbs_dat_i32[ 7:0]; // 8b access
+        4'b1000: wbm_dat_o32[31:24] = wbs_dat_i32[ 7:0]; // 8b access
+        4'b1100: wbm_dat_o32[31:24] = wbs_dat_i32[15:0]; //16b access
+        4'b1111: wbm_dat_o32[31: 0] = wbs_dat_i32[31:0]; //32b access
+        4'b0100: wbm_dat_o32[23:16] = wbs_dat_i32[ 7:0]; // 8b access
+        4'b0010: wbm_dat_o32[15: 8] = wbs_dat_i32[ 7:0]; // 8b access
+        4'b0011: wbm_dat_o32[15: 0] = wbs_dat_i32[15:0]; //16b access
+        4'b0001: wbm_dat_o32[ 7: 0] = wbs_dat_i32[ 7:0]; // 8b access
       endcase // case (wbm_sel_i)
    end
    assign wbm_dat_o = wbm_dat_o32[mdw-1:0];
