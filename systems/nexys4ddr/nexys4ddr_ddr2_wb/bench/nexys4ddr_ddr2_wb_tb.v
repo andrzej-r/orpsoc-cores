@@ -29,7 +29,7 @@
 
 module nexys4ddr_ddr2_wb_tb;
 
-   localparam MEMORY_SIZE_WORDS = 4096;
+   localparam MEMORY_SIZE_WORDS = 32'h0800_0000;
    localparam WB_PORTS = 1;
    localparam awc =  4;
    localparam dwc = 16;
