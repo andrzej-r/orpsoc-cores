@@ -8,10 +8,10 @@
     <DataDepth_En>1024</DataDepth_En>
     <LowPower_En>ON</LowPower_En>
     <XADC_En>Disabled</XADC_En>
-    <TargetFPGA>xc7a100t-csg324/-2</TargetFPGA>
+    <TargetFPGA>xc7a100t-csg324/-1</TargetFPGA>
     <Version>1.9</Version>
     <SystemClock>No Buffer</SystemClock>
-    <ReferenceClock>No Buffer</ReferenceClock>
+    <ReferenceClock>Use System Clock</ReferenceClock>
     <SysResetPolarity>ACTIVE LOW</SysResetPolarity>
     <BankSelectionFlag>FALSE</BankSelectionFlag>
     <InternalVref>1</InternalVref>
@@ -19,10 +19,10 @@
     <dci_cascade>0</dci_cascade>
     <Controller number="0" >
         <MemoryDevice>DDR2_SDRAM/Components/MT47H64M16HR-25E</MemoryDevice>
-        <TimePeriod>3750</TimePeriod>
+        <TimePeriod>5000</TimePeriod>
         <VccAuxIO>1.8V</VccAuxIO>
         <PHYRatio>4:1</PHYRatio>
-        <InputClkFreq>266.666</InputClkFreq>
+        <InputClkFreq>200</InputClkFreq>
         <UIExtraClocks>0</UIExtraClocks>
         <MMCMClkOut0> 1.000</MMCMClkOut0>
         <MMCMClkOut1>1</MMCMClkOut1>

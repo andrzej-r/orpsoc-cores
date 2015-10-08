@@ -24,7 +24,7 @@
                   <xilinx:device>xc7a100t</xilinx:device>
                   <xilinx:deviceFamily>artix7</xilinx:deviceFamily>
                   <xilinx:package>csg324</xilinx:package>
-                  <xilinx:speedGrade>-2</xilinx:speedGrade>
+                  <xilinx:speedGrade>-1</xilinx:speedGrade>
                </xilinx:part>
                <xilinx:flowOptions>
                   <xilinx:busFormat>BusFormatAngleBracketNotRipped</xilinx:busFormat>
@@ -1819,7 +1819,7 @@
             <xilinx:device>xc7a100t</xilinx:device>
             <xilinx:deviceFamily>artix7</xilinx:deviceFamily>
             <xilinx:package>csg324</xilinx:package>
-            <xilinx:speedGrade>-2</xilinx:speedGrade>
+            <xilinx:speedGrade>-1</xilinx:speedGrade>
          </xilinx:part>
          <xilinx:flowOptions>
             <xilinx:busFormat>BusFormatAngleBracketNotRipped</xilinx:busFormat>
