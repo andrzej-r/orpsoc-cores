@@ -94,12 +94,23 @@ module nexys4ddr_xadc_wb #
    // Wishbone to Xilinx DRD I/F
    wire        xadc_dclk   = wb_clk_i;
    wire        xadc_reset  = wb_rst_i;
+   wire        xadc_busy;
 
    wire  [6:0] xadc_daddr  = wb_adr_i  [6:0];
    wire [15:0] xadc_di     = wb_dat_i [15:0];
-   wire        xadc_dwe    = wb_we_i;
+   wire        xadc_den    = wb_adr_i[7] & wb_cyc_i & wb_stb_i & ~xadc_busy; // upper 128 words re-directed to DRD
 
-   wire        xadc_den    = wb_adr_i[7] & wb_cyc_i & wb_stb_i; // upper 128 words re-directed to DRD
+   reg         xadc_den_r;
+   always @(posedge wb_clk_i or posedge async_rst_i)
+     if (async_rst_i)
+       xadc_den_r <= 1'b0;
+     else if (wb_rst_i)
+       xadc_den_r <= 1'b0;
+     else
+       xadc_den_r <= xadc_den;
+
+   wire        xadc_den_pulse = xadc_den & ~xadc_den_r;
+   wire        xadc_dwe       = wb_we_i & xadc_den_pulse;
 
    // read back register values
    wire  [15:0] xadc_do;
@@ -158,7 +169,7 @@ module nexys4ddr_xadc_wb #
      (
       .DADDR_IN             (xadc_daddr),           // Address bus for the dynamic reconfiguration port
       .DCLK_IN              (xadc_dclk),            // Clock input for the dynamic reconfiguration port
-      .DEN_IN               (xadc_den),             // Enable Signal for the dynamic reconfiguration port
+      .DEN_IN               (xadc_den_pulse),       // Enable Signal for the dynamic reconfiguration port
       .DI_IN                (xadc_di),              // Input data bus for the dynamic reconfiguration port
       .DWE_IN               (xadc_dwe),             // Write Enable for the dynamic reconfiguration port
       .RESET_IN             (xadc_reset),           // Reset signal for the System Monitor control logic
