@@ -197,9 +197,12 @@ module nexys4ddr_ddr2_wb #
       .ADDR_CMD_MODE            ("1T" ),
       .REG_CTRL                 ("OFF"),
 
-      .CLKIN_PERIOD             (3750),
+      .CLKIN_PERIOD             (5000),
       .CLKFBOUT_MULT            (4),
       .DIVCLK_DIVIDE            (1),
+      //.CLKIN_PERIOD             (3750),
+      //.CLKFBOUT_MULT            (4),
+      //.DIVCLK_DIVIDE            (1),
       .CLKOUT0_PHASE            (0.0),
       .CLKOUT0_DIVIDE           (2),
       .CLKOUT1_DIVIDE           (4),
@@ -291,7 +294,8 @@ module nexys4ddr_ddr2_wb #
       .TCQ                      (100),
       .IODELAY_GRP              ("IODELAY_MIG"),
       .SYSCLK_TYPE              ("NO_BUFFER"),
-      .REFCLK_TYPE              ("NO_BUFFER"),
+      //.REFCLK_TYPE              ("NO_BUFFER"),
+      .REFCLK_TYPE              ("USE_SYSTEM_CLOCK"),
       .SYS_RST_PORT             ("FALSE"),
       .CMD_PIPE_PLUS1           ("ON"),
       .DRAM_TYPE                ("DDR2"),
@@ -331,7 +335,7 @@ module nexys4ddr_ddr2_wb #
       .sys_clk_i                (sys_clk_i),
       .sys_rst                  (~async_rst_i),
       // Single-ended iodelayctrl clk (reference clock)
-      .clk_ref_i                (clk_ref_i),
+      //.clk_ref_i                (clk_ref_i),
       // user interface signals
       .app_addr                 (app_addr),
       .app_cmd                  (app_cmd),
@@ -368,7 +372,8 @@ module nexys4ddr_ddr2_wb #
    ui_bfm_memory_0
      (
       .sys_clk_i           (sys_clk_i),
-      .clk_ref_i           (clk_ref_i),
+      .clk_ref_i           (sys_clk_i),
+      //.clk_ref_i           (clk_ref_i),
       .app_addr            (app_addr),
       .app_cmd             (app_cmd),
       .app_en              (app_en),
