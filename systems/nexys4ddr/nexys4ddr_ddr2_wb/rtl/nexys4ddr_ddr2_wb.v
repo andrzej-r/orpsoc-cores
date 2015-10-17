@@ -367,7 +367,7 @@ module nexys4ddr_ddr2_wb #
       .aw          (27),
       .memory_file (""),
       .mem_bytes   (32'h8000000),
-      .verbose     (1)
+      .verbose     (0)
       )
    ui_bfm_memory_0
      (
@@ -416,8 +416,8 @@ module nexys4ddr_ddr2_wb #
    always @(posedge wb_clk_o or posedge async_rst_i)
      if (async_rst_i)   device_temp_r <= 16'h977; // approx 25 Cdeg
      else if (wb_rst_o) device_temp_r <= 16'h977;
-     else if (wb_cyc_i & wb_stb_i & wb_we_i & sel[1])
-       device_temp_r <= wb_dat_i[11:0];
+     else if (wbc_cyc_i & wbc_stb_i & wbc_we_i & sel[1])
+       device_temp_r <= wbc_dat_i[11:0];
 
    // app_ref_req_r register
    reg       app_ref_req_r;
@@ -425,9 +425,7 @@ module nexys4ddr_ddr2_wb #
    always @(posedge wb_clk_o or posedge async_rst_i)
      if (async_rst_i)            app_ref_req_r <= 1'b0;
      else if (wb_rst_o)          app_ref_req_r <= 1'b0;
-     else if (app_ref_req_r2[1]) app_ref_req_r <= 1'b0;
-     else if (wb_cyc_i & wb_stb_i & wb_we_i & sel[2])
-       app_ref_req_r <= wb_dat_i[0];
+     else app_ref_req_r <= wbc_cyc_i & wbc_stb_i & wbc_we_i & sel[2] & wbc_dat_i[0];
 
    // app_zq_req_r register
    reg       app_zq_req_r;
@@ -435,20 +433,21 @@ module nexys4ddr_ddr2_wb #
    always @(posedge wb_clk_o or posedge async_rst_i)
      if (async_rst_i)           app_zq_req_r <= 1'b0;
      else if (wb_rst_o)         app_zq_req_r <= 1'b0;
-     else if (app_zq_req_r2[1]) app_zq_req_r <= 1'b0;
-     else if (wb_cyc_i & wb_stb_i & wb_we_i & sel[2])
-       app_zq_req_r <= wb_dat_i[1];
+     else app_zq_req_r <= wbc_cyc_i & wbc_stb_i & wbc_we_i & sel[2] & wbc_dat_i[1];
 
+   /*
    // app_sr_req_r register
    reg       app_sr_req_r;
    reg [1:0] app_sr_req_r2;
    always @(posedge wb_clk_o or posedge async_rst_i)
      if (async_rst_i)           app_sr_req_r <= 1'b0;
      else if (wb_rst_o)         app_sr_req_r <= 1'b0;
-     else if (app_sr_req_r2[1]) app_sr_req_r <= 1'b0;
-     else if (wb_cyc_i & wb_stb_i & wb_we_i & sel[2])
-       app_sr_req_r <= wb_dat_i[2];
-
+     //else if (app_sr_req_r2[1]) app_sr_req_r <= 1'b0;
+     //else if (wbc_ack_o)        app_sr_req_r <= 1'b0;
+     //else if (wbc_cyc_i & wbc_stb_i & wbc_we_i & sel[2])
+     //  app_sr_req_r <= wbc_dat_i[2];
+     else app_sr_req_r <= wbc_cyc_i & wbc_stb_i & wbc_we_i & sel[2] & wbc_dat_i[2];
+    */
 
    // read back register values
    always @(posedge wb_clk_o)
@@ -489,13 +488,16 @@ module nexys4ddr_ddr2_wb #
 
    assign app_zq_req_pulse = (app_zq_req_r2 == 2'b01);
 
+   /*
    // app_sr_req pulse generator
    always @(posedge ui_clk or posedge async_rst_i)
      if (async_rst_i)          app_sr_req_r2 <= 2'b0;
      else if (ui_clk_sync_rst) app_sr_req_r2 <= 2'b0;
      else                      app_sr_req_r2 <= {app_sr_req_r2[0], app_sr_req_r};
 
-   assign app_sr_req_pulse = (app_sr_req_r2 == 2'b01);
+    assign app_sr_req_pulse = (app_sr_req_r2 == 2'b01);
+    */
+    assign app_sr_req_pulse = 1'b0;
 
 endmodule
 
