@@ -1,0 +1,83 @@
+CAPI=1
+[main]
+depend =
+ adv_debug_sys
+ jtag_tap
+ simple_spi
+ vga_lcd
+ ethmac
+ i2c
+ ps2
+ diila
+ mor1kx
+ or1200
+ uart16550-1.5
+ wb_intercon
+ or1k_bootloaders-0.9
+ wb_sseg_ctrl
+ wb_rgb_led
+ wb_gpio
+ nexys4ddr_ddr2_wb
+ nexys4ddr_xadc_wb
+ nexys4ddr_clkgen
+
+simulators =
+ icarus isim xsim
+
+[verilog]
+src_files =
+ rtl/verilog/orpsoc_top.v
+ rtl/verilog/wb_intercon.v
+ rtl/verilog/rs232_syscon.v
+ rtl/verilog/serial.v
+ rtl/verilog/auto_baud_with_tracking.v
+
+# rtl/verilog/xilinx_xadc/wb_xadc.v
+# rtl/verilog/xilinx_xadc/xilinx_xadc.v
+
+tb_private_src_files =
+ bench/orpsoc_tb.v
+ bench/uart_decoder.v
+ bench/uart_stim.v
+ bench/s25fl128s.v
+ /opt/Xilinx/14.7/ISE_DS/ISE/verilog/src/glbl.v
+
+include_files =
+ rtl/verilog/include/or1200_defines.v
+ rtl/verilog/include/orpsoc-defines.v
+ rtl/verilog/include/timescale.v
+ rtl/verilog/include/uart_defines.v
+ rtl/verilog/wb_intercon.vh
+ sw/clear_r3_and_jump_to_0x100.vh
+ sw/spi_uimage_loader.vh
+ sw/jump_to_0x100.vh
+ sw/boot_loop.vh
+ sw/hexloader.vh
+ sw/led_blink.vh
+ sw/mem_access.dat
+ sw/mem_size.dat
+ sw/mem_write.dat
+ sw/mem_copy.dat
+ sw/or1k-basic.dat
+ sw/hello.vh
+ sw/hello.dat
+
+tb_include_files =
+ bench/spi_image.vh
+ bench/test-defines.v
+ bench/xilinx_xadc_sim.txt
+ bench/s25fl128s.mem
+ bench/s25fl128sOTP.mem
+
+[icarus]
+iverilog_options = -DICARUS_SIM -DSIM -y /opt/Xilinx/14.7/ISE_DS/ISE/verilog/src -y /opt/Xilinx/14.7/ISE_DS/ISE/verilog/src/unisims
+depend = mt47h64m16hr-25 vlog_tb_utils wb_bfm elf-loader jtag_vpi wb_bfm
+
+[isim]
+isim_options = work.glbl -d ISIM_SIM -d SIM -L unisims_ver -L secureip
+depend = mt47h64m16hr-25 vlog_tb_utils wb_bfm
+
+[xsim]
+xsim_options = work.glbl -d ISIM_SIM -d SIM -L unisims_ver -L secureip
+depend = mt47h64m16hr-25 vlog_tb_utils wb_bfm
+

@@ -1,0 +1,14 @@
+SAPI=1
+[main]
+name = nexys4ddr_top
+description = "OR1K system for the Digilent Nexys4 DDR development board"
+
+backend = ise
+
+[ise]
+ucf_files = data/nexys4ddr.ucf
+family = artix7
+device = xc7a100t
+package = csg324
+speed = -2
+top_module = orpsoc_top
