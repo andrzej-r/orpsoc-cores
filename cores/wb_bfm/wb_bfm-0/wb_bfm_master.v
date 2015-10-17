@@ -110,6 +110,36 @@ module wb_bfm_master
       end
    endtask
 
+   task read;
+      input [aw-1:0] addr_i;
+      output [dw-1:0] data_o;
+      input [3:0] 		      mask_i;
+      
+      output 			      err_o;
+      
+      integer 			      idx;
+      
+      begin
+	 
+	 addr = addr_i;
+	 mask = mask_i;
+
+	 cycle_type = CLASSIC_CYCLE;
+	 op = READ;
+	 
+	 init;
+	 
+         next;
+	 data_o = data;
+	 wb_cyc_o <= #Tp 1'b0;
+	 wb_stb_o <= #Tp 1'b0;
+	 wb_cti_o <= #Tp 3'b000;
+	 
+	 //last;
+	 
+      end
+   endtask
+
    task read_burst;
       input [aw-1:0] addr_i;
       output [dw*MAX_BURST_LENGTH-1:0] data_o;
