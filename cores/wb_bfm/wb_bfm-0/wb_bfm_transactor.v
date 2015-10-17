@@ -89,7 +89,9 @@ module wb_bfm_transactor
 	      adr_low  = adr*bpw;
 	   end
 	   default : begin
+   `ifndef ISIM_SIM
 	      $error("%d : Illegal burst type (%b)", $time, burst_type);
+   `endif
 	      adr_range = {2*aw{1'bx}};
 	   end
 	   endcase // case (burst_type)
@@ -144,7 +146,9 @@ module wb_bfm_transactor
 	   WRAP_8_BURST   : burst_wrap = 8;
 	   WRAP_16_BURST  : burst_wrap = 16;
 	   CONSTANT_BURST : burst_wrap = 1;
+   `ifndef ISIM_SIM
 	   default : $error("%d : Illegal burst type (%b)", $time, burst_type);
+   `endif
 	 endcase
 	 
 	 for(word = 0; word < burst_length; word = word + 1)
@@ -170,11 +174,12 @@ module wb_bfm_transactor
 	 end
 	 for(word = 0 ; word < burst_length ; word = word +1)
 	   if(read_data[word*dw+:dw] !== expected_data[word*dw+:dw]) begin
+   `ifndef ISIM_SIM
 	      $error("%m : Transaction %0d failed!", transaction);
 	      $error("Read data mismatch on address %h (burst length=%0d, burst_type=%0d, iteration %0d)", address, burst_length, burst_type, word);
 	      $error("Expected %h", expected_data[word*dw+:dw]);
 	      $error("Got      %h", read_data[word*dw+:dw]);
-	    
+   `endif
 	      #3 $finish;
 	   end
 	 if (VERBOSE>1) $display("Read ok from address %h (burst length=%0d, burst_type=%0d)", address, burst_length, burst_type);
