@@ -163,6 +163,7 @@ module ui_bfm_memory #
              @(posedge ui_clk);
              app_rd_data_valid <= 1'b0;
              app_rd_data_end <= 1'b0;
+             app_rd_data <= 128'bx;
           end
      end
 endmodule // ui_bfm_memory
