@@ -25,7 +25,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // WORK, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-module ui_bfm_memory #
+module nexys4ddr_ddr2_bfm #
   (
    parameter dw = 32,
    parameter aw = 32,
@@ -166,4 +166,5 @@ module ui_bfm_memory #
              app_rd_data <= 128'bx;
           end
      end
-endmodule // ui_bfm_memory
+endmodule // nexys4ddr_ddr2_bfm
+

@@ -1,0 +1,9 @@
+CAPI=1
+[main]
+description = "BFM of Xilinx 7-series FPGA DDR2 controller"
+
+simulators = icarus isim xsim modelsim
+
+[verilog]
+src_files =
+ nexys4ddr_ddr2_bfm.v

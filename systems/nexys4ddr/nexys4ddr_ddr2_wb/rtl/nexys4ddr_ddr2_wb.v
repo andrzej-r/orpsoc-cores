@@ -233,7 +233,7 @@ module nexys4ddr_ddr2_wb #
       //.device_temp_i            (device_temp_r)
       );
 `else // !`ifndef BFM_MODEL
-   ui_bfm_memory #
+   nexys4ddr_ddr2_bfm #
      (
       .dw          (128),
       .aw          (27),
@@ -241,7 +241,7 @@ module nexys4ddr_ddr2_wb #
       .mem_bytes   (32'h8000000),
       .verbose     (0)
       )
-   ui_bfm_memory_0
+   nexys4ddr_ddr2_0
      (
       .sys_clk_i           (sys_clk_i),
       .clk_ref_i           (sys_clk_i),

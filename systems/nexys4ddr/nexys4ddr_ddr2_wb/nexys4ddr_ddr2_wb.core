@@ -3,7 +3,7 @@ CAPI=1
 description = "DDR2 controller for Xilinx 7-series FPGAs"
 
 depend =
- nexys4ddr_ddr2 nexys4ddr_clkgen
+ nexys4ddr_ddr2 nexys4ddr_ddr2_bfm nexys4ddr_clkgen
 
 simulators = icarus isim xsim modelsim
 
@@ -11,9 +11,6 @@ simulators = icarus isim xsim modelsim
 src_files =
  rtl/nexys4ddr_ddr2_wb.v
  rtl/nexys4ddr_ddr2_wb_to_ui.v
-
-tb_src_files =
- bench/ui_bfm_memory.v
 
 tb_private_src_files =
  bench/nexys4ddr_ddr2_wb_tb.v

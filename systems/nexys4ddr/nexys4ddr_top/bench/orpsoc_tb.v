@@ -95,10 +95,10 @@ module orpsoc_tb;
 	   for(i=0; i < mem_words; i = i+1)
              begin
                 mem_word = $elf_read_32(i*4);
-	        orpsoc_tb.dut.ddr2_wb0.ui_bfm_memory_0.mem[4*i+0] = mem_word[31:24];
-	        orpsoc_tb.dut.ddr2_wb0.ui_bfm_memory_0.mem[4*i+1] = mem_word[23:16];
-	        orpsoc_tb.dut.ddr2_wb0.ui_bfm_memory_0.mem[4*i+2] = mem_word[15: 8];
-	        orpsoc_tb.dut.ddr2_wb0.ui_bfm_memory_0.mem[4*i+3] = mem_word[ 7: 0];
+	        orpsoc_tb.dut.ddr2_wb0.nexys4ddr_ddr2_0.mem[4*i+0] = mem_word[31:24];
+	        orpsoc_tb.dut.ddr2_wb0.nexys4ddr_ddr2_0.mem[4*i+1] = mem_word[23:16];
+	        orpsoc_tb.dut.ddr2_wb0.nexys4ddr_ddr2_0.mem[4*i+2] = mem_word[15: 8];
+	        orpsoc_tb.dut.ddr2_wb0.nexys4ddr_ddr2_0.mem[4*i+3] = mem_word[ 7: 0];
              end
         end
       else
