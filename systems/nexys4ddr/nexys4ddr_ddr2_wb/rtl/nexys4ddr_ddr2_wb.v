@@ -84,24 +84,41 @@ module nexys4ddr_ddr2_wb #
     output                 ddr2_cke,
     output                 ddr2_cs_n,
     output [1:0]           ddr2_dm,
-    output                 ddr2_odt
+    output                 ddr2_odt,
+
+    // Outputs for debugging
+    output  [26:0]         app_addr,
+    output  [2:0]          app_cmd,
+    output                 app_en,
+    output  [127:0]        app_wdf_data,
+    output                 app_wdf_end,
+    output  [15:0]         app_wdf_mask,
+    output                 app_wdf_wren,
+    output  [127:0]        app_rd_data,
+    output                 app_rd_data_end,
+    output                 app_rd_data_valid,
+    output                 app_rdy,
+    output                 app_wdf_rdy,
+    output    [3:0]        state_o,
+    output   [26:0]        address_burst_o,
+    output                 miss_o
     );
 
    wire                  ui_clk;
    wire                  ui_clk_sync_rst;
 
-   wire  [26:0]          app_addr;
-   wire  [2:0]           app_cmd;
-   wire                  app_en;
-   wire  [127:0]         app_wdf_data;
-   wire                  app_wdf_end;
-   wire  [15:0]          app_wdf_mask;
-   wire                  app_wdf_wren;
-   wire  [127:0]         app_rd_data;
-   wire                  app_rd_data_end;
-   wire                  app_rd_data_valid;
-   wire                  app_rdy;
-   wire                  app_wdf_rdy;
+   //wire  [26:0]          app_addr;
+   //wire  [2:0]           app_cmd;
+   //wire                  app_en;
+   //wire  [127:0]         app_wdf_data;
+   //wire                  app_wdf_end;
+   //wire  [15:0]          app_wdf_mask;
+   //wire                  app_wdf_wren;
+   //wire  [127:0]         app_rd_data;
+   //wire                  app_rd_data_end;
+   //wire                  app_rd_data_valid;
+   //wire                  app_rdy;
+   //wire                  app_wdf_rdy;
 
    reg  [11:0]           device_temp_r;
 
@@ -145,7 +162,10 @@ module nexys4ddr_ddr2_wb #
       .app_rd_data_end_i   (app_rd_data_end),
       .app_rd_data_valid_i (app_rd_data_valid),
       .app_rdy_i           (app_rdy),
-      .app_wdf_rdy_i       (app_wdf_rdy)
+      .app_wdf_rdy_i       (app_wdf_rdy),
+      .state_o             (state_o),
+      .address_burst_o     (address_burst_o),
+      .miss_o              (miss_o)
       );
 
 `ifndef BFM_MODEL
@@ -209,8 +229,8 @@ module nexys4ddr_ddr2_wb #
       .app_zq_ack               (),
       .ui_clk                   (ui_clk),
       .ui_clk_sync_rst          (ui_clk_sync_rst),
-      .init_calib_complete      (init_calib_complete_o),
-      .device_temp_i            (device_temp_r)
+      .init_calib_complete      (init_calib_complete_o)
+      //.device_temp_i            (device_temp_r)
       );
 `else // !`ifndef BFM_MODEL
    ui_bfm_memory #

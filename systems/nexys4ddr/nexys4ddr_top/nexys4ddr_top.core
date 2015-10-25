@@ -28,12 +28,6 @@ simulators =
 src_files =
  rtl/verilog/orpsoc_top.v
  rtl/verilog/wb_intercon.v
- rtl/verilog/rs232_syscon.v
- rtl/verilog/serial.v
- rtl/verilog/auto_baud_with_tracking.v
-
-# rtl/verilog/xilinx_xadc/wb_xadc.v
-# rtl/verilog/xilinx_xadc/xilinx_xadc.v
 
 tb_private_src_files =
  bench/orpsoc_tb.v

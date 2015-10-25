@@ -55,9 +55,9 @@ module orpsoc_tb;
    //localparam WB_LOADER_MEM_FILE_NAME = "../src/nexys4ddr_top/sw/hello.dat";
 `else
    // jumps to 0x100
-   //localparam BOOTROM_FILE = "../src/nexys4ddr_top/sw/jump_to_0x100.vh";
+   localparam BOOTROM_FILE = "../src/nexys4ddr_top/sw/jump_to_0x100.vh";
    //localparam BOOTROM_FILE = "../src/nexys4ddr_top/sw/spi_uimage_loader.vh";
-   localparam BOOTROM_FILE = "../src/nexys4ddr_top/sw/boot_loop.vh";
+   //localparam BOOTROM_FILE = "../src/nexys4ddr_top/sw/boot_loop.vh";
 `endif
 
    ////////////////////////////////////////////////////////////////////////
@@ -106,6 +106,31 @@ module orpsoc_tb;
    end
 `endif //  `ifdef INCLUDE_ELF_LOADER
 
+   integer dump_on = 0;
+   always @(posedge clk)
+     begin
+        //if (!dump_on && dut.mor1kx0.mor1kx_cpu.monitor_execute_pc == 32'h0100)
+        if (!dump_on && dut.mor1kx0.mor1kx_cpu.monitor_execute_pc == 32'h01fb7b20)
+          begin
+             dump_on = 1;
+             $dumpvars(0);
+`define INCLUDE_MOR1KX_REGS
+`ifdef INCLUDE_MOR1KX_REGS
+             //$dumpvars(0, dut.mor1kx0);
+             for (idx = 0; idx < 32; idx = idx + 1) begin
+                $dumpvars(0, dut.mor1kx0.mor1kx_cpu.cappuccino.mor1kx_cpu.mor1kx_rf_cappuccino.rfa.mem[idx]);
+                $dumpvars(0, dut.mor1kx0.mor1kx_cpu.cappuccino.mor1kx_cpu.mor1kx_rf_cappuccino.rfb.mem[idx]);
+                $dumpvars(0, dut.mor1kx0.mor1kx_cpu.cappuccino.mor1kx_cpu.mor1kx_rf_cappuccino.rfspr_gen.rfspr.mem[idx]);
+             end
+`endif
+          end // if (==32'h00000000)
+        //if (dump_on && dut.mor1kx0.mor1kx_cpu.monitor_execute_pc == 32'h0110)
+        if (dump_on &&
+            (dut.mor1kx0.mor1kx_cpu.monitor_execute_pc == 32'h0200 ||
+             dut.mor1kx0.mor1kx_cpu.monitor_execute_pc == 32'h1fb7bd0))
+          $finish();
+     end
+   
    integer idx;
    initial begin
       //if($test$plusargs("lxt2")) begin
@@ -116,17 +141,17 @@ module orpsoc_tb;
       $dumpfile("testlog.lxt");
       //$dumpfile("testlog.fst");
       //$dumpvars(4);
-      $dumpvars(0);
+      //$dumpvars(0); // dump all signals
       //$dumpoff;
-`define INCLUDE_MOR1KX_REGS
-`ifdef INCLUDE_MOR1KX_REGS
-      //$dumpvars(0, dut.mor1kx0);
-      for (idx = 0; idx < 32; idx = idx + 1) begin
-         $dumpvars(0, dut.mor1kx0.mor1kx_cpu.cappuccino.mor1kx_cpu.mor1kx_rf_cappuccino.rfa.mem[idx]);
-         $dumpvars(0, dut.mor1kx0.mor1kx_cpu.cappuccino.mor1kx_cpu.mor1kx_rf_cappuccino.rfb.mem[idx]);
-         $dumpvars(0, dut.mor1kx0.mor1kx_cpu.cappuccino.mor1kx_cpu.mor1kx_rf_cappuccino.rfspr_gen.rfspr.mem[idx]);
-      end
-`endif
+//`define INCLUDE_MOR1KX_REGS
+//`ifdef INCLUDE_MOR1KX_REGS
+//      //$dumpvars(0, dut.mor1kx0);
+//      for (idx = 0; idx < 32; idx = idx + 1) begin
+//         $dumpvars(0, dut.mor1kx0.mor1kx_cpu.cappuccino.mor1kx_cpu.mor1kx_rf_cappuccino.rfa.mem[idx]);
+//         $dumpvars(0, dut.mor1kx0.mor1kx_cpu.cappuccino.mor1kx_cpu.mor1kx_rf_cappuccino.rfb.mem[idx]);
+//         $dumpvars(0, dut.mor1kx0.mor1kx_cpu.cappuccino.mor1kx_cpu.mor1kx_rf_cappuccino.rfspr_gen.rfspr.mem[idx]);
+//      end
+//`endif
    end
 
    localparam                       uart_str_len = 80;

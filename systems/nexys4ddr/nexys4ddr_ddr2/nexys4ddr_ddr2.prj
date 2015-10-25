@@ -7,7 +7,7 @@
     <Debug_En>OFF</Debug_En>
     <DataDepth_En>1024</DataDepth_En>
     <LowPower_En>ON</LowPower_En>
-    <XADC_En>Disabled</XADC_En>
+    <XADC_En>Enabled</XADC_En>
     <TargetFPGA>xc7a100t-csg324/-1</TargetFPGA>
     <Version>1.9</Version>
     <SystemClock>No Buffer</SystemClock>
@@ -98,11 +98,11 @@
         </TimingParameters>
         <mrBurstLength name="Burst Length" >8</mrBurstLength>
         <mrBurstType name="Burst Type" >Sequential</mrBurstType>
-        <mrCasLatency name="CAS Latency" >4</mrCasLatency>
+        <mrCasLatency name="CAS Latency" >5</mrCasLatency>
         <mrMode name="Mode" >Normal</mrMode>
         <mrDllReset name="DLL Reset" >No</mrDllReset>
         <mrPdMode name="PD Mode" >Fast exit</mrPdMode>
-        <mrWriteRecovery name="Write Recovery" >4</mrWriteRecovery>
+        <mrWriteRecovery name="Write Recovery" >5</mrWriteRecovery>
         <emrDllEnable name="DLL Enable" >Enable-Normal</emrDllEnable>
         <emrOutputDriveStrength name="Output Drive Strength" >Fullstrength</emrOutputDriveStrength>
         <emrCSSelection name="Controller Chip Select Pin" >Enable</emrCSSelection>

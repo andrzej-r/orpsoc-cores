@@ -22,10 +22,10 @@
 `endif
 `define DEBUG_RS232
 `define BOOTROM
-`define XADC0
-`ifdef XADC0
+//`define XADC0
+//`ifdef XADC0
  `define DDR2
-`endif
+//`endif
 
 `define GPIO_SW
 `define GPIO_PBTN

@@ -36,18 +36,6 @@ wire [31:0] wb_s2m_dbg_dat;
 wire        wb_s2m_dbg_ack;
 wire        wb_s2m_dbg_err;
 wire        wb_s2m_dbg_rty;
-wire [31:0] wb_m2s_dbg_rs232_adr;
-wire [31:0] wb_m2s_dbg_rs232_dat;
-wire  [3:0] wb_m2s_dbg_rs232_sel;
-wire        wb_m2s_dbg_rs232_we;
-wire        wb_m2s_dbg_rs232_cyc;
-wire        wb_m2s_dbg_rs232_stb;
-wire  [2:0] wb_m2s_dbg_rs232_cti;
-wire  [1:0] wb_m2s_dbg_rs232_bte;
-wire [31:0] wb_s2m_dbg_rs232_dat;
-wire        wb_s2m_dbg_rs232_ack;
-wire        wb_s2m_dbg_rs232_err;
-wire        wb_s2m_dbg_rs232_rty;
 wire [31:0] wb_m2s_ddr2_adr;
 wire [31:0] wb_m2s_ddr2_dat;
 wire  [3:0] wb_m2s_ddr2_sel;
@@ -216,6 +204,18 @@ wire  [7:0] wb_s2m_i2c_temp_dat;
 wire        wb_s2m_i2c_temp_ack;
 wire        wb_s2m_i2c_temp_err;
 wire        wb_s2m_i2c_temp_rty;
+wire [31:0] wb_m2s_diila_adr;
+wire [31:0] wb_m2s_diila_dat;
+wire  [3:0] wb_m2s_diila_sel;
+wire        wb_m2s_diila_we;
+wire        wb_m2s_diila_cyc;
+wire        wb_m2s_diila_stb;
+wire  [2:0] wb_m2s_diila_cti;
+wire  [1:0] wb_m2s_diila_bte;
+wire [31:0] wb_s2m_diila_dat;
+wire        wb_s2m_diila_ack;
+wire        wb_s2m_diila_err;
+wire        wb_s2m_diila_rty;
 wire [31:0] wb_m2s_rom0_adr;
 wire [31:0] wb_m2s_rom0_dat;
 wire  [3:0] wb_m2s_rom0_sel;
@@ -268,18 +268,6 @@ wb_intercon wb_intercon0
     .wb_dbg_ack_o       (wb_s2m_dbg_ack),
     .wb_dbg_err_o       (wb_s2m_dbg_err),
     .wb_dbg_rty_o       (wb_s2m_dbg_rty),
-    .wb_dbg_rs232_adr_i (wb_m2s_dbg_rs232_adr),
-    .wb_dbg_rs232_dat_i (wb_m2s_dbg_rs232_dat),
-    .wb_dbg_rs232_sel_i (wb_m2s_dbg_rs232_sel),
-    .wb_dbg_rs232_we_i  (wb_m2s_dbg_rs232_we),
-    .wb_dbg_rs232_cyc_i (wb_m2s_dbg_rs232_cyc),
-    .wb_dbg_rs232_stb_i (wb_m2s_dbg_rs232_stb),
-    .wb_dbg_rs232_cti_i (wb_m2s_dbg_rs232_cti),
-    .wb_dbg_rs232_bte_i (wb_m2s_dbg_rs232_bte),
-    .wb_dbg_rs232_dat_o (wb_s2m_dbg_rs232_dat),
-    .wb_dbg_rs232_ack_o (wb_s2m_dbg_rs232_ack),
-    .wb_dbg_rs232_err_o (wb_s2m_dbg_rs232_err),
-    .wb_dbg_rs232_rty_o (wb_s2m_dbg_rs232_rty),
     .wb_ddr2_adr_o      (wb_m2s_ddr2_adr),
     .wb_ddr2_dat_o      (wb_m2s_ddr2_dat),
     .wb_ddr2_sel_o      (wb_m2s_ddr2_sel),
@@ -448,6 +436,18 @@ wb_intercon wb_intercon0
     .wb_i2c_temp_ack_i  (wb_s2m_i2c_temp_ack),
     .wb_i2c_temp_err_i  (wb_s2m_i2c_temp_err),
     .wb_i2c_temp_rty_i  (wb_s2m_i2c_temp_rty),
+    .wb_diila_adr_o     (wb_m2s_diila_adr),
+    .wb_diila_dat_o     (wb_m2s_diila_dat),
+    .wb_diila_sel_o     (wb_m2s_diila_sel),
+    .wb_diila_we_o      (wb_m2s_diila_we),
+    .wb_diila_cyc_o     (wb_m2s_diila_cyc),
+    .wb_diila_stb_o     (wb_m2s_diila_stb),
+    .wb_diila_cti_o     (wb_m2s_diila_cti),
+    .wb_diila_bte_o     (wb_m2s_diila_bte),
+    .wb_diila_dat_i     (wb_s2m_diila_dat),
+    .wb_diila_ack_i     (wb_s2m_diila_ack),
+    .wb_diila_err_i     (wb_s2m_diila_err),
+    .wb_diila_rty_i     (wb_s2m_diila_rty),
     .wb_rom0_adr_o      (wb_m2s_rom0_adr),
     .wb_rom0_dat_o      (wb_m2s_rom0_dat),
     .wb_rom0_sel_o      (wb_m2s_rom0_sel),

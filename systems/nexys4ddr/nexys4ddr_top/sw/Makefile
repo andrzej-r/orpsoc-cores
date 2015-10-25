@@ -24,6 +24,9 @@ hexloader.elf: hexloader.S
 hello.elf: hello.c
 	or1k-elf-gcc -ggdb -mboard=nexys4ddr $< -o $@
 
+mem_test.elf: mem_test.c
+	or1k-elf-gcc -ggdb -mboard=nexys4ddr $< -o $@
+
 %.vh: %.bin
 	python ./wb_rom_gen.py $< > $@
 

@@ -345,6 +345,7 @@ module orpsoc_top #
       );
 `endif
 
+   wire exception;
 `ifdef MOR1KX
    mor1kx
      #(
@@ -431,7 +432,7 @@ module orpsoc_top #
       .avm_i_readdatavalid_i (1'b0),
 
       .irq_i                 (or1k_irq),
-
+      .exception (exception),
       .du_addr_i             (or1k_dbg_adr_i[15:0]),
       .du_stb_i              (or1k_dbg_stb_i),
       .du_dat_i              (or1k_dbg_dat_i),
@@ -691,6 +692,21 @@ module orpsoc_top #
    ////////////////////////////////////////////////////////////////////////
    // DDR2 SDRAM Memory Controller
    ////////////////////////////////////////////////////////////////////////
+   wire  [26:0]          app_addr;
+   wire  [2:0]           app_cmd;
+   wire                  app_en;
+   wire  [127:0]         app_wdf_data;
+   wire                  app_wdf_end;
+   wire  [15:0]          app_wdf_mask;
+   wire                  app_wdf_wren;
+   wire  [127:0]         app_rd_data;
+   wire                  app_rd_data_end;
+   wire                  app_rd_data_valid;
+   wire                  app_rdy;
+   wire                  app_wdf_rdy;
+   wire    [3:0]         ddr2_state;
+   wire   [26:0]         ddr2_address_burst;
+   wire                  ddr2_miss;
 
    wire ddr2_init_calib_complete;
 `ifdef DDR2
@@ -733,6 +749,22 @@ module orpsoc_top #
       .clk_ref_i             (ddr2_if_ref_clk),
       .init_calib_complete_o (ddr2_init_calib_complete),
 
+      .app_addr              (app_addr),
+      .app_cmd               (app_cmd),
+      .app_en                (app_en),
+      .app_wdf_data          (app_wdf_data),
+      .app_wdf_end           (app_wdf_end),
+      .app_wdf_mask          (app_wdf_mask),
+      .app_wdf_wren          (app_wdf_wren),
+      .app_rd_data           (app_rd_data),
+      .app_rd_data_end       (app_rd_data_end),
+      .app_rd_data_valid     (app_rd_data_valid),
+      .app_rdy               (app_rdy),
+      .app_wdf_rdy           (app_wdf_rdy),
+      .state_o               (ddr2_state),
+      .address_burst_o       (ddr2_address_burst),
+      .miss_o                (ddr2_miss),
+
       .ddr2_addr             (ddr2_addr[12:0]),
       .ddr2_ba               (ddr2_ba),
       .ddr2_ras_n            (ddr2_ras_n),
@@ -749,8 +781,6 @@ module orpsoc_top #
       .ddr2_dqs_n            (ddr2_dqs_n)
       );
 
-   wire ddr2_align_err1 = (wb_m2s_ddr2_cyc && wb_m2s_ddr2_adr[3:2] == 2'b11 && wb_m2s_ddr2_adr[1:0] != 2'b00 && wb_m2s_ddr2_sel == 4'b1111);
-   wire ddr2_align_err2 = (wb_m2s_ddr2_cyc && wb_m2s_ddr2_adr[3:0] == 4'b1111 && wb_m2s_ddr2_sel == 4'b0011);
 `else // !`ifdef DDR2
    assign ddr2_init_calib_complete = 1'b0;
    assign wb_s2m_ddr2_dat = 0;
@@ -769,8 +799,6 @@ module orpsoc_top #
 
    wire                 uart_irq;
 `ifdef UART0
-   wire uart_txd_16550;
-   wire uart_rxd_16550;
    uart_top uart16550_0
      (
       // Wishbone slave interface
@@ -787,12 +815,12 @@ module orpsoc_top #
 
       // Outputs
       .int_o          (uart_irq),
-      .stx_pad_o      (uart_txd_16550),
+      .stx_pad_o      (uart_txd_o),
       .rts_pad_o      (uart_rts_o),
       .dtr_pad_o      (),
 
       // Inputs
-      .srx_pad_i      (uart_rxd_16550),
+      .srx_pad_i      (uart_rxd_i),
       .cts_pad_i      (uart_cts_i),
       .dsr_pad_i      (1'b0),
       .ri_pad_i       (1'b0),
@@ -1442,6 +1470,103 @@ module orpsoc_top #
    assign wb_s2m_xadc0_rty = 0;
 `endif // !`ifdef XADC0
 
+
+   ////////////////////////////////////////////////////////////////////////
+   // diila - Device Independent Integrated Logic Analyzer
+   ////////////////////////////////////////////////////////////////////////
+
+   wire [31:0] diila_trig;
+   wire [31:0] diila_data [5:0];
+
+   assign diila_trig = {
+		        29'h0,
+                        //mor1kx0.mor1kx_cpu.cappuccino.mor1kx_cpu.mor1kx_ctrl_cappuccino.exception,
+                        exception,
+		        wb_m2s_dbg_stb,
+		        wb_m2s_dbg_cyc
+		        };
+
+   assign diila_data[0] = wb_m2s_ddr2_adr;
+   assign diila_data[1] = wb_m2s_ddr2_dat;
+   assign diila_data[2] = wb_s2m_ddr2_dat;
+   assign diila_data[3] = {
+			   5'h0,
+			   wb_m2s_or1k_i_cyc,	// 1
+			   wb_m2s_or1k_i_stb,	// 1
+			   wb_m2s_or1k_d_cyc,	// 1
+			   wb_m2s_or1k_d_stb,	// 1
+			   wb_m2s_diila_cyc,	// 1
+			   1'b0, //wb_m2s_eth0_cyc,	// 1
+			   1'b0, //wb_m2s_vga0_cyc,	// 1
+			   1'b0, //wb_m2s_spi0_cyc,	// 1
+			   1'b0, //wb_m2s_gpio0_cyc,	// 1
+			   wb_m2s_uart0_cyc,	// 1
+			   wb_s2m_dbg_ack,		// 1
+			   wb_m2s_dbg_we,		// 1
+			   wb_m2s_ddr2_stb,	// 1
+			   wb_m2s_ddr2_cyc,	// 1
+			   wb_m2s_ddr2_bte,	// 2
+			   wb_m2s_ddr2_cti,	// 3
+			   wb_m2s_ddr2_sel,	// 4
+			   wb_m2s_ddr2_we,	// 1
+			   wb_s2m_ddr2_ack,	// 1
+			   wb_s2m_ddr2_err,	// 1
+			   wb_s2m_ddr2_rty	// 1
+			   };
+   assign diila_data[4] = {
+                           app_rd_data[99:96],
+                           app_rd_data[67:64],
+                           app_rd_data[35:32],
+                           app_rd_data[3:0],
+                           6'b0,
+                           app_en, // 1
+                           app_rdy, // 1
+                           app_cmd, // 3
+                           app_wdf_wren, // 1
+                           app_wdf_rdy, // 1
+                           app_wdf_end, // 1
+                           app_rd_data_valid, // 1
+                           app_rd_data_end // 1
+                           };
+                          //wb_m2s_dbg_adr;
+   assign diila_data[5] = {
+                           ddr2_miss, // 1
+                           ddr2_state, // 4
+                           ddr2_address_burst // 27
+                           //app_addr // 27
+                           };
+
+   diila #
+     (
+      .DATA_WIDTH(32*6)
+      )
+   diila
+     (
+      .wb_rst_i             (wb_rst),
+      .wb_clk_i             (wb_clk),
+      .wb_dat_i             (wb_m2s_diila_dat),
+      .wb_adr_i             (wb_m2s_diila_adr[23:2]),
+      .wb_sel_i             (wb_m2s_diila_sel),
+      .wb_we_i              (wb_m2s_diila_we),
+      .wb_cyc_i             (wb_m2s_diila_cyc),
+      .wb_stb_i             (wb_m2s_diila_stb),
+      .wb_dat_o             (wb_s2m_diila_dat),
+      .wb_ack_o             (wb_s2m_diila_ack),
+      .wb_err_o             (wb_s2m_diila_err),
+      .wb_rty_o             (wb_s2m_diila_rty),
+      .storage_en           (1'b1/*diila_storage_en*/),
+      .trig_i               (diila_trig),
+      .data_i               ({
+			      diila_data[0],
+			      diila_data[1],
+			      diila_data[2],
+			      diila_data[3],
+			      diila_data[4],
+			      diila_data[5]
+			      })
+      );
+
+
    ////////////////////////////////////////////////////////////////////////
    // Interrupt assignment
    ////////////////////////////////////////////////////////////////////////
@@ -1479,58 +1604,7 @@ module orpsoc_top #
    assign or1k_irq[30] = 0;
    assign or1k_irq[31] = 0;
 
-   ////////////////////////////////////////////////////////////////////////
-   // RS232 debug
-   ////////////////////////////////////////////////////////////////////////
-
-   wire uart_txd_syscon;
-   wire uart_rxd_syscon;
-   wire sel_syscon = sw_i[14];
-`ifndef SIM
- `ifdef DEBUG_RS232
-   wire stb_syscon;
-   wire cyc_syscon;
-   rs232_syscon dbg_if_rs232
-     (
-      .clk_i          (wb_clk),
-      .reset_i        (wb_rst),
-      .ack_i          (wb_s2m_dbg_rs232_ack),
-      .err_i          (wb_s2m_dbg_rs232_err),
-      .master_bg_i    (1'b1), // always grant bus access
-      .master_adr_i   (32'b0),
-      .master_stb_i   (1'b0),
-      .master_we_i    (1'b0),
-      .rs232_rxd_i    (uart_rxd_syscon),
-      .dat_i          (wb_s2m_dbg_rs232_dat),
-      .dat_o          (wb_m2s_dbg_rs232_dat),
-      .rst_o          (),
-      .master_br_o    (),
-      .stb_o          (stb_syscon),
-      .cyc_o          (cyc_syscon),
-      .adr_o          (wb_m2s_dbg_rs232_adr),
-      .we_o           (wb_m2s_dbg_rs232_we),
-      .rs232_txd_o    (uart_txd_syscon)
-      );
-   assign wb_m2s_dbg_rs232_stb = stb_syscon & sel_syscon;
-   assign wb_m2s_dbg_rs232_cyc = cyc_syscon & sel_syscon;
- `else // !`ifdef DEBUG_RS232
-   assign wb_m2s_dbg_rs232_dat = 0;
-   assign wb_m2s_dbg_rs232_stb = 0;
-   assign wb_m2s_dbg_rs232_cyc = 0;
-   assign wb_m2s_dbg_rs232_adr = 0;
-   assign wb_m2s_dbg_rs232_we = 0;
- `endif // !`ifdef DEBUG_RS232
-   assign wb_m2s_dbg_rs232_bte = 2'b00  & {2{sel_syscon}};
-   assign wb_m2s_dbg_rs232_cti = 3'b000 & {3{sel_syscon}};
-   assign wb_m2s_dbg_rs232_sel = 4'b1111 & {4{sel_syscon}};
-`else // !`ifndef SIM
-   // attach WB master in the testbench
-`endif //  `ifndef SIM
-
    wire enable = sw_i[15];
-   assign uart_txd_o      = sel_syscon ? uart_txd_syscon : uart_txd_16550;
-   assign uart_rxd_16550  = sel_syscon ? 1'b1            : uart_rxd_i;
-   assign uart_rxd_syscon = sel_syscon ? uart_rxd_i      : 1'b1;
    reg [31:0]      count;
    always @(posedge wb_clk or posedge async_rst)
      if (async_rst)
@@ -1540,7 +1614,7 @@ module orpsoc_top #
 
    //assign led_net = 16'b0; //sw_i; //{enable, 3'b0, count[31:20]} | {wb_m2s_ddr2_dbus_adr[7:0], wb_m2s_ddr2_dbus_dat[7:0]} | wb_m2s_ddr2_ibus_adr[15:0];
    //assign led_net = sw_i | {16'b0};
-   assign led_net = sw_i | {ddr2_align_err1, ddr2_align_err2, 14'b0};
+   assign led_net = sw_i | {wb_m2s_dbg_cyc, exception, 14'b0};
    //assign led_net = sw_i | {5'b0,dbg_tck,jtag_tap_drck,jtag_tap_runtest,jtag_tap_select,dbg_if_tdo,jtag_tap_tdo,jtag_tap_shift_dr,jtag_tap_pause_dr,jtag_tap_update_dr,jtag_tap_capture_dr,jtag_tap_reset};
    //assign led_net = sw_i | {3'b0,or1k_dbg_stall_i,or1k_dbg_bp_o, dbg_tck,jtag_tap_drck,jtag_tap_runtest,jtag_tap_select,dbg_if_tdo,jtag_tap_tdo,jtag_tap_shift_dr,jtag_tap_pause_dr,jtag_tap_update_dr,jtag_tap_capture_dr,jtag_tap_reset};
 

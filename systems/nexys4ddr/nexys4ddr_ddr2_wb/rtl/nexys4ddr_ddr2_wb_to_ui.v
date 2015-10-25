@@ -32,39 +32,44 @@
 
 module nexys4ddr_ddr2_wb_to_ui
   (
-    input                                        clk_i,
-    input                                        rst_i,
-    input                                        async_rst_i,
+   input                                        clk_i,
+   input                                        rst_i,
+   input                                        async_rst_i,
 
-    // Wishbone Interface
-    input       [31:0]                           wb_adr_i,
-    input       [31:0]                           wb_dat_i,
-    input        [3:0]                           wb_sel_i,
-    input                                        wb_we_i,
-    input                                        wb_cyc_i,
-    input                                        wb_stb_i,
-    input        [2:0]                           wb_cti_i,
-    input        [1:0]                           wb_bte_i,
-    output reg  [31:0]                           wb_dat_o,
-    output reg                                   wb_ack_o,
-    output                                       wb_err_o,
-    output                                       wb_rty_o,
+   // Wishbone Interface
+   input       [31:0]                           wb_adr_i,
+   input       [31:0]                           wb_dat_i,
+   input        [3:0]                           wb_sel_i,
+   input                                        wb_we_i,
+   input                                        wb_cyc_i,
+   input                                        wb_stb_i,
+   input        [2:0]                           wb_cti_i,
+   input        [1:0]                           wb_bte_i,
+   output      [31:0]                           wb_dat_o,
+   output reg                                   wb_ack_o,
+   output                                       wb_err_o,
+   output                                       wb_rty_o,
 
-    // DDR2
-    // user interface signals
-    output reg  [26:0]                           app_addr_o,
-    output reg   [2:0]                           app_cmd_o,
-    output reg                                   app_en_o,
-    output     [127:0]                           app_wdf_data_o,
-    output reg                                   app_wdf_end_o,
-    output reg  [15:0]                           app_wdf_mask_o,
-    output reg                                   app_wdf_wren_o,
-    input      [127:0]                           app_rd_data_i,
-    input                                        app_rd_data_end_i,
-    input                                        app_rd_data_valid_i,
-    input                                        app_rdy_i,
-    input                                        app_wdf_rdy_i
-    );
+   // DDR2
+   // user interface signals
+   output reg  [26:0]                           app_addr_o,
+   output reg   [2:0]                           app_cmd_o,
+   output reg                                   app_en_o,
+   output     [127:0]                           app_wdf_data_o,
+   output reg                                   app_wdf_end_o,
+   output reg  [15:0]                           app_wdf_mask_o,
+   output reg                                   app_wdf_wren_o,
+   input      [127:0]                           app_rd_data_i,
+   input                                        app_rd_data_end_i,
+   input                                        app_rd_data_valid_i,
+   input                                        app_rdy_i,
+   input                                        app_wdf_rdy_i,
+
+   // Outputs for debugging
+   output       [3:0]                           state_o,
+   output      [26:0]                           address_burst_o,
+   output                                       miss_o
+   );
 
    function [31:0] swap_bytes;
       input [31:0] value;
@@ -99,7 +104,7 @@ module nexys4ddr_ddr2_wb_to_ui
      STATE_READ_WAIT_RD_DATA  = 4'b1001,
      STATE_READ_SEND_RD_DATA  = 4'b1010;
 
-   wire classic       = wb_cyc_i &  wb_stb_i & wb_cti_i == WB_CLASSIC;
+   wire classic       = wb_cyc_i &  wb_stb_i;// & wb_cti_i == WB_CLASSIC;
    wire burst_end     = wb_cyc_i &  wb_cti_i == WB_BURST_END;
    wire burst         = wb_cyc_i & (wb_cti_i == WB_BURST_CONST || wb_cti_i == WB_BURST_INC);
    wire read          = wb_cyc_i & ~wb_we_i;
@@ -146,6 +151,8 @@ module nexys4ddr_ddr2_wb_to_ui
    wire miss = (address_burst_r[26:4] != address_burst_r2[26:4]);
 
    wire [6:0] app_addr_offs = {3'b000, address_burst_r[3:0]};
+   //wire [6:0] app_addr_offs = {4'b0000, address_burst_r[2:0]}; // test only
+   //wire [6:0] app_addr_offs = {3'b0000, address_burst_r[3:1]};
 
    // write data and mask
    reg [151:0] app_wdf_data_tmp;
@@ -165,6 +172,9 @@ module nexys4ddr_ddr2_wb_to_ui
 
    // read data mux
    wire [6:0] rd_app_addr_offs = {3'b000, address_burst_r2[3:2], 2'b00};
+   //wire [6:0] rd_app_addr_offs = {4'b0000, address_burst_r[2:2], 2'b00}; // test only
+   //wire [6:0] rd_app_addr_offs = {4'b0000, address_burst_r[3:2], 1'b0};
+   //wire [6:0] rd_app_addr_offs = {5'b00000, 2'b00};
 
    // latch received data (app_rd_data_i stable only during app_rd_data_valid_i
    reg [127:0] app_rd_data_r;
@@ -172,6 +182,7 @@ module nexys4ddr_ddr2_wb_to_ui
      if (app_rd_data_valid_i)
        app_rd_data_r <= app_rd_data_i;
 
+   //wire [31:0] rd_data_selected = app_rd_data_i [(rd_app_addr_offs<<3) +: 32];
    wire [31:0] rd_data_selected = app_rd_data_r [(rd_app_addr_offs<<3) +: 32];
 
    // state machine transitions
@@ -234,7 +245,7 @@ module nexys4ddr_ddr2_wb_to_ui
           app_wdf_end_o       <= 1'b1;
           app_wdf_data_r      <= 128'h0;
           wb_ack_o            <= 1'b0;
-          wb_dat_o            <= 32'h0;
+          //wb_dat_o            <= 32'h0;
           state_r             <= STATE_IDLE;
        end
      else if (rst_i)
@@ -247,7 +258,7 @@ module nexys4ddr_ddr2_wb_to_ui
           app_wdf_end_o       <= 1'b1;
           app_wdf_data_r      <= 128'h0;
           wb_ack_o            <= 1'b0;
-          wb_dat_o            <= 32'h0;
+          //wb_dat_o            <= 32'h0;
           state_r             <= STATE_IDLE;
        end
      else
@@ -260,7 +271,7 @@ module nexys4ddr_ddr2_wb_to_ui
           app_wdf_end_o       <= 1'b1;
           app_wdf_data_r      <= 128'h0;
           wb_ack_o            <= 1'b0;
-          wb_dat_o            <= 32'h0;
+          //wb_dat_o            <= 32'h0;
           state_r             <= state_new;
           case (state_new)
             STATE_WRITE_CMD:
@@ -268,6 +279,8 @@ module nexys4ddr_ddr2_wb_to_ui
                  app_en_o       <= 1'b1;
                  app_cmd_o      <= 3'b000;
                  app_addr_o     <= {address_burst_new[26:4], 4'b0000};
+                 //app_addr_o     <= {address_burst_new[26:3], 3'b000}; // test only
+                 //app_addr_o     <= {1'b0, address_burst_new[26:4], 3'b000};
              end
             STATE_WRITE_DATA:
               begin
@@ -286,17 +299,21 @@ module nexys4ddr_ddr2_wb_to_ui
                  app_en_o       <= 1'b1;
                  app_cmd_o      <= 3'b000;
                  app_addr_o     <= {address_burst_new[26:4], 4'b0000};
+                 //app_addr_o     <= {address_burst_new[26:3], 3'b000}; // test only
+                 //app_addr_o     <= {1'b0, address_burst_new[26:4], 3'b000};
               end
             STATE_READ_CMD:
               begin
                  app_en_o       <= 1'b1;
                  app_cmd_o      <= 3'b001;
                  app_addr_o     <= {address_burst_new[26:4], 4'b0000};
+                 //app_addr_o     <= {address_burst_new[26:3], 3'b000}; // test only
+                 //app_addr_o     <= {1'b0, address_burst_new[26:4], 3'b000};
               end
             STATE_READ_SEND_RD_DATA:
               begin
                  wb_ack_o       <= 1'b1;
-                 wb_dat_o       <= swap_bytes(rd_data_selected);
+                 //wb_dat_o       <= swap_bytes(rd_data_selected);
               end
             default:
               begin
@@ -308,10 +325,12 @@ module nexys4ddr_ddr2_wb_to_ui
                  app_wdf_end_o  <= 1'b1;
                  app_wdf_data_r <= 128'h0;
                  wb_ack_o       <= 1'b0;
-                 wb_dat_o       <= 32'h0;
+                 //wb_dat_o       <= 32'h0;
               end
           endcase // case (state_new)
        end // else: !if(rst_i)
+
+   assign wb_dat_o = swap_bytes(rd_data_selected);
 
    assign wb_err_o = wb_ack_o & 1'b0;
    assign wb_rty_o = wb_ack_o & 1'b0;
@@ -321,4 +340,9 @@ module nexys4ddr_ddr2_wb_to_ui
 `else
    assign app_wdf_data_o = app_wdf_data_tmp[127:0];
 `endif
+
+   assign state_o = state_r;
+   assign address_burst_o = address_burst_r;
+   assign miss_o = miss;
+
 endmodule // wb_to_ui

@@ -8,7 +8,7 @@
 #define GPIO_LED_DIR  4
 #define GPIO_LED_DATA 0
 
-#define SSEG_CTRL_BASE 0x92000000
+#define SSEG_CTRL_BASE 0x91004000
 #define SSEG_CTRL_EN   0
 #define SSEG_CTRL_DIG0 0x20
 #define SSEG_CTRL_DIG1 0x24
