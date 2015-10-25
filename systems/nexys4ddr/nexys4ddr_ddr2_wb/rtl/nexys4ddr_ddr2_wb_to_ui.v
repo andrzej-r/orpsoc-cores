@@ -164,8 +164,15 @@ module nexys4ddr_ddr2_wb_to_ui
      end
 
    // read data mux
-   wire [6:0] rd_app_addr_offs = {3'b000, address_burst_r[3:2], 2'b00};
-   wire [31:0] rd_data_selected = app_rd_data_i [(rd_app_addr_offs<<3) +: 32];
+   wire [6:0] rd_app_addr_offs = {3'b000, address_burst_r2[3:2], 2'b00};
+
+   // latch received data (app_rd_data_i stable only during app_rd_data_valid_i
+   reg [127:0] app_rd_data_r;
+   always @(posedge clk_i)
+     if (app_rd_data_valid_i)
+       app_rd_data_r <= app_rd_data_i;
+
+   wire [31:0] rd_data_selected = app_rd_data_r [(rd_app_addr_offs<<3) +: 32];
 
    // state machine transitions
    always @(*)
