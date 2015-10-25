@@ -105,9 +105,10 @@ module nexys4ddr_ddr2_wb_tb;
    generate
       for(i=0;i<WB_PORTS;i=i+1) begin : masters
 	 wb_bfm_transactor
-	    #(.MEM_HIGH (MEMORY_SIZE_WORDS*(i+1)-1),
-	      .MEM_LOW  (MEMORY_SIZE_WORDS*i),
-	      .VERBOSE  (1))
+	    #(.MEM_HIGH      (MEMORY_SIZE_WORDS*(i+1)-1),
+	      .MEM_LOW       (MEMORY_SIZE_WORDS*i),
+              .MAX_BURST_LEN (9),
+	      .VERBOSE       (1))
 	 wb_bfm_transactor0
 	    (.wb_clk_i (wb_clk),
 	     .wb_rst_i (wb_rst),
@@ -163,7 +164,7 @@ module nexys4ddr_ddr2_wb_tb;
    endgenerate
 `else // !`ifdef USE_TRANSACTOR
    wb_bfm_master
-     #(.MAX_BURST_LENGTH (4))
+     #(.MAX_BURST_LENGTH (9))
    bfm
      (.wb_clk_i (wb_clk),
       .wb_rst_i (wb_rst),
