@@ -73,11 +73,13 @@ module nexys4ddr_ddr2_wb_to_ui
 
    function [31:0] swap_bytes;
       input [31:0] value;
+      //swap_bytes = value;
       swap_bytes = {value[7:0], value[15:8], value[23:16], value[31:24]};
    endfunction
 
    function [3:0] swap_bits;
       input [3:0] value;
+      //swap_bits = value;
       swap_bits = {value[0], value[1], value[2], value[3]};
    endfunction
 
@@ -105,6 +107,7 @@ module nexys4ddr_ddr2_wb_to_ui
      STATE_READ_SEND_RD_DATA  = 4'b1010;
 
    wire classic       = wb_cyc_i &  wb_stb_i;// & wb_cti_i == WB_CLASSIC;
+   //wire classic       = wb_cyc_i &  wb_stb_i & wb_cti_i == WB_CLASSIC;
    wire burst_end     = wb_cyc_i &  wb_cti_i == WB_BURST_END;
    wire burst         = wb_cyc_i & (wb_cti_i == WB_BURST_CONST || wb_cti_i == WB_BURST_INC);
    wire read          = wb_cyc_i & ~wb_we_i;
@@ -150,6 +153,7 @@ module nexys4ddr_ddr2_wb_to_ui
    // Schedule new request when read address moves beyond 128b boundary.
    wire miss = (address_burst_r[26:4] != address_burst_r2[26:4]);
 
+   //wire [6:0] app_addr_offs = 7'b0; //{3'b000, address_burst_r[3:0]};
    wire [6:0] app_addr_offs = {3'b000, address_burst_r[3:0]};
    //wire [6:0] app_addr_offs = {4'b0000, address_burst_r[2:0]}; // test only
    //wire [6:0] app_addr_offs = {3'b0000, address_burst_r[3:1]};
@@ -171,6 +175,7 @@ module nexys4ddr_ddr2_wb_to_ui
      end
 
    // read data mux
+   //wire [6:0] rd_app_addr_offs = 7'b0; //{3'b000, address_burst_r2[3:2], 2'b00};
    wire [6:0] rd_app_addr_offs = {3'b000, address_burst_r2[3:2], 2'b00};
    //wire [6:0] rd_app_addr_offs = {4'b0000, address_burst_r[2:2], 2'b00}; // test only
    //wire [6:0] rd_app_addr_offs = {4'b0000, address_burst_r[3:2], 1'b0};
@@ -278,6 +283,7 @@ module nexys4ddr_ddr2_wb_to_ui
               begin
                  app_en_o       <= 1'b1;
                  app_cmd_o      <= 3'b000;
+                 //app_addr_o     <= address_burst_new;
                  app_addr_o     <= {address_burst_new[26:4], 4'b0000};
                  //app_addr_o     <= {address_burst_new[26:3], 3'b000}; // test only
                  //app_addr_o     <= {1'b0, address_burst_new[26:4], 3'b000};
@@ -298,6 +304,7 @@ module nexys4ddr_ddr2_wb_to_ui
                  wb_ack_o       <= 1'b1;
                  app_en_o       <= 1'b1;
                  app_cmd_o      <= 3'b000;
+                 //app_addr_o     <= address_burst_new;
                  app_addr_o     <= {address_burst_new[26:4], 4'b0000};
                  //app_addr_o     <= {address_burst_new[26:3], 3'b000}; // test only
                  //app_addr_o     <= {1'b0, address_burst_new[26:4], 3'b000};
@@ -306,6 +313,7 @@ module nexys4ddr_ddr2_wb_to_ui
               begin
                  app_en_o       <= 1'b1;
                  app_cmd_o      <= 3'b001;
+                 //app_addr_o     <= address_burst_new;
                  app_addr_o     <= {address_burst_new[26:4], 4'b0000};
                  //app_addr_o     <= {address_burst_new[26:3], 3'b000}; // test only
                  //app_addr_o     <= {1'b0, address_burst_new[26:4], 3'b000};
