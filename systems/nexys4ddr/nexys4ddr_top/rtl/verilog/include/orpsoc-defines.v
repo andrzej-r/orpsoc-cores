@@ -11,8 +11,8 @@
 `define SPI_FLASH
 `define SPI_ACCEL
 `define I2C_TEMP
-`undef VGA0
-`undef ETH0
+`define VGA0
+`define ETH0
 `define PS2_0
 `define DEBUG_JTAG
 //`undef DEBUG_JTAG

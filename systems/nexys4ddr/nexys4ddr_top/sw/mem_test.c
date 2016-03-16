@@ -34,12 +34,12 @@ void displayHex (unsigned long val)
   int i;
   int nibble;
   unsigned long digit;
-  REG32(SSEG_CTRL_EN) = (unsigned long) 0x1;
+  REG16(SSEG_CTRL_EN) = (unsigned long) 0x1;
   for (i = 0; i < 32; i += 4)
     {
       nibble = (val >> i) & 0xf;
       digit = hexDigits[nibble];
-      REG32(SSEG_CTRL_DIG7 - i) = digit;
+      REG16(SSEG_CTRL_DIG7 - i) = digit;
       //printf("Val: %08x, nibble: %x, digit: %02x\n", val, nibble, digit);
     }
 }
@@ -129,7 +129,7 @@ unsigned long memFind (unsigned long val)
 unsigned long readTemperature (void)
 {
   unsigned long val;
-  val = REG32(XADC_TEMP);
+  val = REG16(XADC_TEMP);
   printf ("Die temperature: %f Cdeg (raw value: %08x)\n", val * 503.975 / (1<<16) - 273.15, val);
   return val;
 }
@@ -137,15 +137,15 @@ unsigned long readTemperature (void)
 void calibrateTemperature (unsigned long val)
 {
   unsigned long valShifted = val >> 4;
-  REG32(DDR2_CTRL_TEMP) = valShifted;
+  REG16(DDR2_CTRL_TEMP) = valShifted;
 }
 
 int main (int argc, char *argv[])
 {
-  //REG32(GPIO_LED_DIR)  = 0xaaaaaaaa;
-  //REG32(GPIO_LED_DATA) = 0xaaaaaaaa;
+  REG16(GPIO_LED_DIR)  = 0xaaaa;
+  REG16(GPIO_LED_DATA) = 0xaaaa;
   printf("Hello World!\n");
-  calibrateTemperature(readTemperature());
+  //calibrateTemperature(readTemperature());
   memTest(0x02200000,0x02210000);
   //memFind(0x01b77f90);
   return 0;

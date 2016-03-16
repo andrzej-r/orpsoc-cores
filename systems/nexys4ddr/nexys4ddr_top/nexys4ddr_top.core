@@ -20,6 +20,9 @@ depend =
  nexys4ddr_ddr2_wb
  nexys4ddr_xadc_wb
  nexys4ddr_clkgen
+ xilinx_mii_to_rmii
+ dbg_cnt
+
 
 simulators =
  icarus isim xsim
@@ -65,7 +68,7 @@ tb_include_files =
 
 [icarus]
 iverilog_options = -DICARUS_SIM -DSIM -y /opt/Xilinx/14.7/ISE_DS/ISE/verilog/src -y /opt/Xilinx/14.7/ISE_DS/ISE/verilog/src/unisims
-depend = mt47h64m16hr-25 vlog_tb_utils wb_bfm elf-loader jtag_vpi wb_bfm
+depend = mt47h64m16hr-25 vlog_tb_utils wb_bfm elf-loader jtag_vpi
 
 [isim]
 isim_options = work.glbl -d ISIM_SIM -d SIM -L unisims_ver -L secureip

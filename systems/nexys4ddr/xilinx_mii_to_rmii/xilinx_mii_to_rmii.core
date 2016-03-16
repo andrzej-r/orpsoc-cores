@@ -1,0 +1,17 @@
+CAPI=1
+[main]
+description = "Xilinx MII to RMII adapter"
+
+[verilog]
+src_files =
+ rtl/mii_to_rmii.vhd
+ rtl/rmii_rx_agile.vhd
+ rtl/rmii_rx_fixed.vhd
+ rtl/rmii_tx_agile.vhd
+ rtl/rmii_tx_fixed.vhd
+ rtl/rx_fifo_disposer.vhd
+ rtl/rx_fifo_loader.vhd
+ rtl/rx_fifo.vhd
+ rtl/srl_fifo.vhd
+
+

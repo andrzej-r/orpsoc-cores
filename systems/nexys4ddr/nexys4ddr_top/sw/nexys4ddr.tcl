@@ -8,7 +8,7 @@ ftdi_layout_signal GPIO1 -data 0x0200
 ftdi_layout_signal GPIO0 -data 0x0100
 
 #poll_period 1
-adapter_khz 6000
+adapter_khz 10000
 
 set  _CHIPNAME or1k
 set  _ENDIAN big

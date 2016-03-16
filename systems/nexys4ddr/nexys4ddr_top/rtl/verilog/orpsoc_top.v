@@ -113,16 +113,16 @@ module orpsoc_top #
     //output        spi_flash_sck_o, // dedicated pin, access via STARTUPE2
 
     // SMSC Ethernet PHY
-    input [1:0]   eth_rxd_i,
-    output [1:0]  eth_txd_o,
-    input         eth_crsdv_i,
-    input         eth_intn_i,
-    output        eth_mdc_o,
-    inout         eth_mdio_io,
-    inout         eth_refclk_io, // high-Z -> uses xtal oscillator
-    output        eth_rst_n_o,
-    output        eth_txen_o,
-    input         eth_rxerr_i,
+    output        eth0_refclk_o,
+    output        eth0_rst_n_o,
+    output        eth0_tx_en_o,
+    output [1:0]  eth0_txd_o,
+    input [1:0]   eth0_rxd_i,
+    input         eth0_rx_er_i,
+    input         eth0_crs_dv_i,
+    input         eth0_intn_i,
+    output        eth0_mdc_o,
+    inout         eth0_mdio_io,
 
     // DDR2 interface signals
     output [12:0] ddr2_addr,
@@ -172,11 +172,11 @@ module orpsoc_top #
    //assign        uart_txd_o = 1'b1;
 
    //VGA Signals
-   assign        vga_hs_o = 1'b0;
-   assign        vga_vs_o = 1'b0;
-   assign        vga_red_o = 4'b0;
-   assign        vga_green_o = 4'b0;
-   assign        vga_blue_o = 4'b0;
+   //assign        vga_hs_o = 1'b0;
+   //assign        vga_vs_o = 1'b0;
+   //assign        vga_red_o = 4'b0;
+   //assign        vga_green_o = 4'b0;
+   //assign        vga_blue_o = 4'b0;
 
    // ADMP421 Omnidirectional Microphone Signals
    assign        mic_pdm_clk_o = 1'b0;
@@ -432,7 +432,7 @@ module orpsoc_top #
       .avm_i_readdatavalid_i (1'b0),
 
       .irq_i                 (or1k_irq),
-      .exception (exception),
+      //.exception (exception),
       .du_addr_i             (or1k_dbg_adr_i[15:0]),
       .du_stb_i              (or1k_dbg_stb_i),
       .du_dat_i              (or1k_dbg_dat_i),
@@ -1204,12 +1204,11 @@ module orpsoc_top #
 
 `ifdef VGA0
    wire            vga0_irq;
-   wire            pclk;
-   wire [7:0]      r;
-   wire [7:0]      g;
-   wire [7:0]      b;
-   wire            hsync;
-   wire            vsync;
+   wire            vga_pclk;
+   wire            vga_pclk_buf;
+   wire [7:0]      vga_r;
+   wire [7:0]      vga_g;
+   wire [7:0]      vga_b;
    wire            blank;
    wire            gate;
    reg [15:0]      hlen;
@@ -1247,18 +1246,99 @@ module orpsoc_top #
       .wbm_dat_i      (wb_s2m_vga0_master_dat),
       .wbm_ack_i      (wb_s2m_vga0_master_ack),
       .wbm_err_i      (wb_s2m_vga0_master_err),
-      .clk_p_i        (pclk),
+      .clk_p_i        (vga_pclk_buf),
       .clk_p_o        (),
-      .hsync_pad_o    (hsync),
-      .vsync_pad_o    (vsync),
+      .hsync_pad_o    (vga_hs_o),
+      .vsync_pad_o    (vga_vs_o),
       .csync_pad_o    (),
-      .blank_pad_o    (blank),
-      .r_pad_o        (r),
-      .g_pad_o        (g),
-      .b_pad_o        (b)
+      .blank_pad_o    (vga_blank),
+      .r_pad_o        (vga_r),
+      .g_pad_o        (vga_g),
+      .b_pad_o        (vga_b)
       );
+
+   assign vga_red_o   = vga_r[7:4];
+   assign vga_green_o = vga_g[7:4];
+   assign vga_blue_o  = vga_b[7:4];
+
+   wire vga_clkfb;
+   MMCM_ADV #
+     (
+      .BANDWIDTH            ("OPTIMIZED"),
+      .CLKOUT4_CASCADE      ("FALSE"),
+      .CLOCK_HOLD           ("FALSE"),
+      .COMPENSATION         ("ZHOLD"),
+      .STARTUP_WAIT         ("FALSE"),
+      .DIVCLK_DIVIDE        (1),
+      .CLKFBOUT_MULT_F      (16.000), // 800MHz
+      .CLKFBOUT_PHASE       (0.000),
+      .CLKFBOUT_USE_FINE_PS ("FALSE"),
+      .CLKOUT0_DIVIDE_F     (32.000), // 25MHz VGA 640x480@60 Hz | 65MHz - 1024x768, 60Hz
+      .CLKOUT0_PHASE        (0.000), //90.000
+      .CLKOUT0_DUTY_CYCLE   (0.500),
+      .CLKOUT0_USE_FINE_PS  ("FALSE"),
+      .CLKIN1_PERIOD        (20.000),
+      .REF_JITTER1          (0.010))
+   mmcm_adv_vga
+     (
+      // Output clocks
+      .CLKFBOUT             (vga_clkfb),
+      .CLKFBOUTB            (),
+      .CLKOUT0              (vga_pclk),
+      .CLKOUT0B             (),
+      .CLKOUT1              (),
+      .CLKOUT1B             (),
+      .CLKOUT2              (),
+      .CLKOUT2B             (),
+      .CLKOUT3              (),
+      .CLKOUT3B             (),
+      .CLKOUT4              (),
+      .CLKOUT5              (),
+      .CLKOUT6              (),
+      // Input clock control
+      .CLKFBIN              (vga_clkfb),
+      .CLKIN1               (wb_clk),
+      .CLKIN2               (1'b0),
+      // Tied to always select the primary input clock
+      .CLKINSEL             (1'b1),
+      // Ports for dynamic reconfiguration
+      .DADDR                (7'h0),
+      .DCLK                 (1'b0),
+      .DEN                  (1'b0),
+      .DI                   (16'h0),
+      .DO                   (),
+      .DRDY                 (),
+      .DWE                  (1'b0),
+      // Ports for dynamic phase shift
+      .PSCLK                (1'b0),
+      .PSEN                 (1'b0),
+      .PSINCDEC             (1'b0),
+      .PSDONE               (),
+      // Other control and status signals
+      .LOCKED               (),
+      .CLKINSTOPPED         (),
+      .CLKFBSTOPPED         (),
+      .PWRDWN               (1'b0),
+      .RST                  ()
+      );
+
+      // clock buffers
+   BUFG bufg_vga_pclk
+     (
+      .O (vga_pclk_buf),
+      .I (vga_pclk)
+      );
+
+   //assign vga_pclk = wb_clk;
 `else
-   wire            vga0_irq = 0;
+   wire   vga0_irq    = 1'b0;
+   assign vga_pclk    = 1'b0;
+   assign vga_red_o   = 4'b0;
+   assign vga_green_o = 4'b0;
+   assign vga_blue_o  = 4'b0;
+   assign vga_hs_o    = 1'b0;
+   assign vga_vs_o    = 1'b0;
+
    assign wb_s2m_vga0_dat = 0;
    assign wb_s2m_vga0_ack = 0;
    assign wb_s2m_vga0_err = 0;
@@ -1277,41 +1357,36 @@ module orpsoc_top #
 
 `ifdef ETH0
    wire            eth0_irq;
-   wire [3:0]      eth0_mtxd;
-   wire            eth0_mtxen;
-   wire            eth0_mtxerr;
-   wire            eth0_mtx_clk;
-   wire            eth0_mrx_clk;
-   wire [3:0]      eth0_mrxd;
-   wire            eth0_mrxdv;
-   wire            eth0_mrxerr;
-   wire            eth0_mcoll;
-   wire            eth0_mcrs;
-   wire            eth0_speed;
-   wire            eth0_duplex;
-   wire            eth0_link;
-   // Management interface wires
-   wire            eth0_md_i;
-   wire            eth0_md_o;
-   wire            eth0_md_oe;
+   wire            eth0_100m = 1'b1;
 
-   // Hook up MII wires
-   assign eth0_mtx_clk   = eth0_tx_clk;
-   assign eth0_tx_data   = eth0_mtxd[3:0];
-   assign eth0_tx_en     = eth0_mtxen;
-   assign eth0_tx_er     = eth0_mtxerr;
-   assign eth0_mrxd[3:0] = eth0_rx_data;
-   assign eth0_mrxdv     = eth0_dv;
-   assign eth0_mrxerr    = eth0_rx_er;
-   assign eth0_mrx_clk   = eth0_rx_clk;
-   assign eth0_mcoll     = eth0_col;
-   assign eth0_mcrs      = eth0_crs;
+   // MII
+   // Tx
+   wire [3:0]      eth0_mii_txd;
+   wire            eth0_mii_tx_en;
+   wire            eth0_mii_tx_er;
+   wire            eth0_mii_tx_clk;
+   // Rx
+   wire            eth0_mii_rx_clk;
+   wire [3:0]      eth0_mii_rxd;
+   wire            eth0_mii_rx_dv;
+   wire            eth0_mii_rx_er;
+   wire            eth0_mii_coll;
+   wire            eth0_mii_crs;
+
+   //wire            eth0_speed;
+   //wire            eth0_duplex;
+   //wire            eth0_link;
+   // Management interface wires
+   wire            eth0_mdio_i;
+   wire            eth0_mdio_o;
+   wire            eth0_mdio_oe;
 
    // Tristate control for management interface
-   assign eth0_md_pad_io = eth0_md_oe ? eth0_md_o : 1'bz;
-   assign eth0_md_i = eth0_md_pad_io;
+   assign eth0_mdio_io  = eth0_mdio_oe ? eth0_mdio_o : 1'bz;
+   assign eth0_mdio_i   = eth0_mdio_io;
 
-   assign eth0_rst_n_o = !wb_rst;
+   //assign eth0_refclk_o = ~wb_clk; // 50MHz, 180Deg
+   assign eth0_rst_n_o  = ~wb_rst;
 
    ethmac ethmac0
      (
@@ -1342,31 +1417,164 @@ module orpsoc_top #
 
       // Ethernet MII interface
       // Transmit
-      .mtxd_pad_o     (eth0_mtxd[3:0]),
-      .mtxen_pad_o    (eth0_mtxen),
-      .mtxerr_pad_o   (eth0_mtxerr),
-      .mtx_clk_pad_i  (eth0_mtx_clk),
+      .mtxd_pad_o     (eth0_mii_txd),
+      .mtxen_pad_o    (eth0_mii_tx_en),
+      .mtxerr_pad_o   (eth0_mii_tx_er),
+      .mtx_clk_pad_i  (eth0_mii_tx_clk),
       // Receive
-      .mrx_clk_pad_i  (eth0_mrx_clk),
-      .mrxd_pad_i     (eth0_mrxd[3:0]),
-      .mrxdv_pad_i    (eth0_mrxdv),
-      .mrxerr_pad_i   (eth0_mrxerr),
-      .mcoll_pad_i    (eth0_mcoll),
-      .mcrs_pad_i     (eth0_mcrs),
+      .mrx_clk_pad_i  (eth0_mii_rx_clk),
+      .mrxd_pad_i     (eth0_mii_rxd),
+      .mrxdv_pad_i    (eth0_mii_rx_dv),
+      .mrxerr_pad_i   (eth0_mii_rx_er),
+      .mcoll_pad_i    (eth0_mii_coll),
+      .mcrs_pad_i     (eth0_mii_crs),
       // Management interface
-      .md_pad_i       (eth0_md_i),
-      .mdc_pad_o      (eth0_mdc_pad_o),
-      .md_pad_o       (eth0_md_o),
-      .md_padoe_o     (eth0_md_oe),
+      .md_pad_i       (eth0_mdio_i),
+      .mdc_pad_o      (eth0_mdc_o),
+      .md_pad_o       (eth0_mdio_o),
+      .md_padoe_o     (eth0_mdio_oe),
 
       // Processor interrupt
       .int_o          (eth0_irq)
       );
+
+/* -----\/----- EXCLUDED -----\/-----
+   // MII to RMII adapter
+   mii2rmii mii2rmii_0
+     (
+      .clk_i         (wb_clk),
+      .rst_i         (wb_rst),
+      .async_rst_i   (async_rst),
+      .en_100M       (eth0_en_100m),
+
+      // MII (MAC) side
+      // Tx
+      .mii_txd_i     (eth0_mii_txd),
+      .mii_tx_en_i   (eth0_mii_tx_en),
+      .mii_tx_er_i   (eth0_mii_tx_er),
+      .mii_tx_clk_o  (eth0_mii_tx_clk),
+      // Rx
+      .mii_rx_clk_o  (eth0_mii_rx_clk),
+      .mii_rxd_o     (eth0_mii_rxd),
+      .mii_rx_dv_o   (eth0_mii_rx_dv),
+      .mii_rx_er_o   (eth0_mii_rx_er),
+      .mii_coll_o    (eth0_mii_coll),
+      .mii_crs_o     (eth0_mii_crs),
+
+      // RMII (PHY) side
+      // Tx
+      .rmii_txd_o    (eth0_txd_o),
+      .rmii_tx_en_o  (eth0_tx_en_o),
+      // Rx
+      .rmii_rxd_i    (eth0_rxd_i),
+      .rmii_rx_er_i  (eth0_rx_er_i),
+      .rmii_crs_dv_i (eth0_crs_dv_i)
+      );
+ -----/\----- EXCLUDED -----/\----- */
+ `ifndef SIM
+   // Xilinx MII to RMII adapter (VHDL)
+   mii_to_rmii
+   mii2rmii_0
+     (
+      .ref_clk           (wb_clk),
+      .rst_n             (~wb_rst),
+
+      // MII (MAC) side
+      // Tx
+      .mac2rmii_txd      (eth0_mii_txd),
+      .mac2rmii_tx_en    (eth0_mii_tx_en),
+      .mac2rmii_tx_er    (eth0_mii_tx_er),
+      .rmii2mac_tx_clk   (eth0_mii_tx_clk),
+      // Rx
+      .rmii2mac_rx_clk   (eth0_mii_rx_clk),
+      .rmii2mac_rxd      (eth0_mii_rxd),
+      .rmii2mac_rx_dv    (eth0_mii_rx_dv),
+      .rmii2mac_rx_er    (eth0_mii_rx_er),
+      .rmii2mac_col      (eth0_mii_coll),
+      .rmii2mac_crs      (eth0_mii_crs),
+
+      // RMII (PHY) side
+      // Tx
+      .rmii2phy_txd      (eth0_txd_o),
+      .rmii2phy_tx_en    (eth0_tx_en_o),
+      // Rx
+      .phy2rmii_rxd      (eth0_rxd_i),
+      .phy2rmii_rx_er    (eth0_rx_er_i),
+      .phy2rmii_crs_dv   (eth0_crs_dv_i)
+      );
+ `endif // !`ifdef SIM
+
+   MMCM_ADV #
+     (
+      .BANDWIDTH            ("OPTIMIZED"),
+      .CLKOUT4_CASCADE      ("FALSE"),
+      .CLOCK_HOLD           ("FALSE"),
+      .COMPENSATION         ("ZHOLD"),
+      .STARTUP_WAIT         ("FALSE"),
+      .DIVCLK_DIVIDE        (1),
+      .CLKFBOUT_MULT_F      (16.000), // 800MHz
+      .CLKFBOUT_PHASE       (0.000),
+      .CLKFBOUT_USE_FINE_PS ("FALSE"),
+      .CLKOUT0_DIVIDE_F     (16.000), // 50MHz
+      .CLKOUT0_PHASE        (45.000), //90.000
+      .CLKOUT0_DUTY_CYCLE   (0.500),
+      .CLKOUT0_USE_FINE_PS  ("FALSE"),
+      .CLKIN1_PERIOD        (20.000),
+      .REF_JITTER1          (0.010))
+   mmcm_adv_0
+     (
+      // Output clocks
+      .CLKFBOUT             (clkfb),
+      .CLKFBOUTB            (),
+      .CLKOUT0              (eth0_refclk_o),
+      .CLKOUT0B             (),
+      .CLKOUT1              (),
+      .CLKOUT1B             (),
+      .CLKOUT2              (),
+      .CLKOUT2B             (),
+      .CLKOUT3              (),
+      .CLKOUT3B             (),
+      .CLKOUT4              (),
+      .CLKOUT5              (),
+      .CLKOUT6              (),
+      // Input clock control
+      .CLKFBIN              (clkfb_buf),
+      .CLKIN1               (wb_clk),
+      .CLKIN2               (1'b0),
+      // Tied to always select the primary input clock
+      .CLKINSEL             (1'b1),
+      // Ports for dynamic reconfiguration
+      .DADDR                (7'h0),
+      .DCLK                 (1'b0),
+      .DEN                  (1'b0),
+      .DI                   (16'h0),
+      .DO                   (),
+      .DRDY                 (),
+      .DWE                  (1'b0),
+      // Ports for dynamic phase shift
+      .PSCLK                (1'b0),
+      .PSEN                 (1'b0),
+      .PSINCDEC             (1'b0),
+      .PSDONE               (),
+      // Other control and status signals
+      .LOCKED               (),
+      .CLKINSTOPPED         (),
+      .CLKFBSTOPPED         (),
+      .PWRDWN               (1'b0),
+      .RST                  ()
+      );
+
+      // clock buffers
+   BUFG bufg_clkfb
+     (
+      .O (clkfb_buf),
+      .I (clkfb)
+      );
+
 `else
    assign eth0_irq = 0;
-   assign eth0_tx_data = 0;
-   assign eth0_tx_en = 0;
-   assign eth0_tx_er = 0;
+   assign eth0_txd_o = 0;
+   assign eth0_tx_en_o = 0;
    assign eth0_mdc_pad_o = 0;
    assign eth0_md_pad_io = 0;
    assign eth0_rst_n_o = 0;
@@ -1566,6 +1774,46 @@ module orpsoc_top #
 			      })
       );
 
+   wire [15:0] dbg_cnt_0_strobe =
+               {
+                4'b0,
+                or1k_irq,
+                exception,
+                wb_m2s_or1k_d_cyc & ~wb_m2s_or1k_d_we & wb_s2m_or1k_d_ack,
+                wb_m2s_or1k_d_cyc &  wb_m2s_or1k_d_we & wb_s2m_or1k_d_ack,
+                wb_m2s_eth0_master_cyc & wb_s2m_eth0_master_ack,
+                wb_m2s_or1k_i_cyc & wb_s2m_or1k_i_ack,
+                1'b1,
+                app_en & app_rdy,
+                app_rd_data_valid,
+                app_wdf_wren & app_wdf_rdy,
+                wb_m2s_ddr2_cyc & ~wb_m2s_ddr2_we & wb_s2m_ddr2_ack,
+                wb_m2s_ddr2_cyc &  wb_m2s_ddr2_we & wb_s2m_ddr2_ack
+                };
+
+   dbg_cnt #
+     (
+      .n_counters (16)
+      )
+   dbg_cnt_0
+     (
+      .wb_clk_i             (wb_clk),
+      .wb_rst_i             (wb_rst),
+      .async_rst_i          (async_rst),
+      .wb_dat_i             (wb_m2s_dbg_cnt_dat),
+      .wb_adr_i             (wb_m2s_dbg_cnt_adr[6:2]),
+      .wb_sel_i             (wb_m2s_dbg_cnt_sel),
+      .wb_we_i              (wb_m2s_dbg_cnt_we),
+      .wb_cyc_i             (wb_m2s_dbg_cnt_cyc),
+      .wb_stb_i             (wb_m2s_dbg_cnt_stb),
+      .wb_dat_o             (wb_s2m_dbg_cnt_dat),
+      .wb_ack_o             (wb_s2m_dbg_cnt_ack),
+      .wb_err_o             (wb_s2m_dbg_cnt_err),
+      .wb_rty_o             (wb_s2m_dbg_cnt_rty),
+      .cnt_strobe_i         (dbg_cnt_0_strobe),
+      .irq_o                (dbg_cnt_0_irq)
+      );
+
 
    ////////////////////////////////////////////////////////////////////////
    // Interrupt assignment
@@ -1579,14 +1827,14 @@ module orpsoc_top #
    assign or1k_irq[5] = ps2_0_irq;
    assign or1k_irq[6] = 0; //spi_accel_irq;
    assign or1k_irq[7] = 0;
-   assign or1k_irq[8] = 0; //vga0_irq;
+   assign or1k_irq[8] = vga0_irq;
    assign or1k_irq[9] = 0;
    assign or1k_irq[10] = 0;
    assign or1k_irq[11] = 0;
    assign or1k_irq[12] = 0; //ac97_irq;
    assign or1k_irq[13] = 0; //ps2_1_irq;
    assign or1k_irq[14] = 0; //ps2_2_irq;
-   assign or1k_irq[15] = 0;
+   assign or1k_irq[15] = dbg_cnt_0_irq;
    assign or1k_irq[16] = 0;
    assign or1k_irq[17] = 0;
    assign or1k_irq[18] = 0;
@@ -1614,9 +1862,11 @@ module orpsoc_top #
 
    //assign led_net = 16'b0; //sw_i; //{enable, 3'b0, count[31:20]} | {wb_m2s_ddr2_dbus_adr[7:0], wb_m2s_ddr2_dbus_dat[7:0]} | wb_m2s_ddr2_ibus_adr[15:0];
    //assign led_net = sw_i | {16'b0};
-   assign led_net = sw_i | {wb_m2s_dbg_cyc, exception, 14'b0};
+   //assign led_net = sw_i | {wb_m2s_dbg_cyc, exception, 14'b0};
    //assign led_net = sw_i | {5'b0,dbg_tck,jtag_tap_drck,jtag_tap_runtest,jtag_tap_select,dbg_if_tdo,jtag_tap_tdo,jtag_tap_shift_dr,jtag_tap_pause_dr,jtag_tap_update_dr,jtag_tap_capture_dr,jtag_tap_reset};
    //assign led_net = sw_i | {3'b0,or1k_dbg_stall_i,or1k_dbg_bp_o, dbg_tck,jtag_tap_drck,jtag_tap_runtest,jtag_tap_select,dbg_if_tdo,jtag_tap_tdo,jtag_tap_shift_dr,jtag_tap_pause_dr,jtag_tap_update_dr,jtag_tap_capture_dr,jtag_tap_reset};
+
+   assign led_net = sw_i | {wb_m2s_dbg_cyc, exception, 3'b0, eth0_mii_tx_en, eth0_mii_tx_er, eth0_mii_rx_dv, eth0_mii_rx_er, eth0_mii_coll, eth0_mii_crs, eth0_txd_o, eth0_tx_en_o, eth0_rxd_i, eth0_rx_er_i, eth0_crs_dv_i};
 
    assign ja_net = 8'b0;
    assign jb_net = 8'b0;

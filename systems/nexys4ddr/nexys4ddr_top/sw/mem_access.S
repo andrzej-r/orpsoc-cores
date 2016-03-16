@@ -19,7 +19,7 @@ boot_init:
 
 	l.movhi r6,  hi(GPIO_LED_BASE)
 	l.ori   r6,  r6, lo(GPIO_LED_BASE)
-        l.sw    GPIO_LED_DIR (r6), r5
+        l.sh    GPIO_LED_DIR (r6), r5
 
 	l.movhi r3,   0x0001
         l.ori   r3,r3,0x0203
@@ -144,13 +144,13 @@ boot_init:
 finish_ok:
 	l.movhi r5,     0xffff
 	l.ori   r5, r5, 0xffff
-        l.sw    GPIO_LED_DATA (r6), r5
+        l.sh    GPIO_LED_DATA (r6), r5
         l.j     finish_ok
         l.nop
 
 error:
 	l.movhi r5,     0xdead
 	l.ori   r5, r5, 0xdead
-        l.sw    GPIO_LED_DATA (r6), r5
+        l.sh    GPIO_LED_DATA (r6), r5
         l.j     error
         l.nop

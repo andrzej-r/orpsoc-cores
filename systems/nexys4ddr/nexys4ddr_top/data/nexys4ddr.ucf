@@ -186,34 +186,28 @@ NET "spi_flash_dq_io<3>"        LOC=M14  | IOSTANDARD=LVCMOS33; #IO_L2N_T0_D03_1
 
 
 ##SMSC Ethernet PHY
-NET "eth_rxd_i<0>"              LOC=C11  | IOSTANDARD=LVCMOS33; #IO_L13P_T2_MRCC_16
-NET "eth_rxd_i<1>"              LOC=D10  | IOSTANDARD=LVCMOS33; #IO_L19N_T3_VREF_16
-NET "eth_txd_o<0>"              LOC=A10  | IOSTANDARD=LVCMOS33; #IO_L14P_T2_SRCC_16
-NET "eth_txd_o<1>"              LOC=A8   | IOSTANDARD=LVCMOS33; #IO_L12N_T1_MRCC_16
-NET "eth_crsdv_i"               LOC=D9   | IOSTANDARD=LVCMOS33; #IO_L6N_T0_VREF_16
-NET "eth_intn_i"                LOC=B8   | IOSTANDARD=LVCMOS33; #IO_L12P_T1_MRCC_16
-NET "eth_mdc_o"                 LOC=C9   | IOSTANDARD=LVCMOS33; #IO_L11P_T1_SRCC_16
-NET "eth_mdio_io"               LOC=A9   | IOSTANDARD=LVCMOS33; #IO_L14N_T2_SRCC_16
-NET "eth_refclk_io"             LOC=D5   | IOSTANDARD=LVCMOS33; #IO_L11P_T1_SRCC_35
-NET "eth_rst_n_o"               LOC=B3   | IOSTANDARD=LVCMOS33; #IO_L10P_T1_AD15P_35
-NET "eth_txen_o"                LOC=B9   | IOSTANDARD=LVCMOS33; #IO_L11N_T1_SRCC_16
-NET "eth_rxerr_i"               LOC=C10  | IOSTANDARD=LVCMOS33; #IO_L13N_T2_MRCC_16
+NET "eth0_refclk_o"             LOC=D5   | IOSTANDARD=LVCMOS33; #IO_L11P_T1_SRCC_35
+NET "eth0_rst_n_o"              LOC=B3   | IOSTANDARD=LVCMOS33; #IO_L10P_T1_AD15P_35
+NET "eth0_tx_en_o"              LOC=B9   | IOSTANDARD=LVCMOS33; #IO_L11N_T1_SRCC_16
+NET "eth0_txd_o<0>"             LOC=A10  | IOSTANDARD=LVCMOS33; #IO_L14P_T2_SRCC_16
+NET "eth0_txd_o<1>"             LOC=A8   | IOSTANDARD=LVCMOS33; #IO_L12N_T1_MRCC_16
+NET "eth0_rxd_i<0>"             LOC=C11  | IOSTANDARD=LVCMOS33; #IO_L13P_T2_MRCC_16
+NET "eth0_rxd_i<1>"             LOC=D10  | IOSTANDARD=LVCMOS33; #IO_L19N_T3_VREF_16
+NET "eth0_rx_er_i"              LOC=C10  | IOSTANDARD=LVCMOS33; #IO_L13N_T2_MRCC_16
+NET "eth0_crs_dv_i"             LOC=D9   | IOSTANDARD=LVCMOS33; #IO_L6N_T0_VREF_16
+NET "eth0_intn_i"               LOC=B8   | IOSTANDARD=LVCMOS33; #IO_L12P_T1_MRCC_16
+NET "eth0_mdc_o"                LOC=C9   | IOSTANDARD=LVCMOS33; #IO_L11P_T1_SRCC_16
+NET "eth0_mdio_io"              LOC=A9   | IOSTANDARD=LVCMOS33; #IO_L14N_T2_SRCC_16
 
 # Incoming System Clock PERIOD Constraint
 NET "clk_i" TNM_NET = "sys_clk_pin";
 TIMESPEC TS_sys_clk_pin = PERIOD "sys_clk_pin" 100000 KHz;
 
 # Ignore Clock Domain Crossing signals
-# These signals are coming from the 100MHz clock domain
-# ant are not time-critical: RGB LED, Temperature, Accelerometer
-# and Mouse Controller data, going to the 108Mhz clock domain, the VGA display controller
 
-# Define a new TNM for a FROM - TO constraint
-#NET "Inst_VGA/pxl_clk" TNM_NET = "crossing_pxl_clk";
-#NET "clk_100MHz_buf" TNM_NET = "crossing_clk_i";
-
-TIMESPEC TS_xdomain = FROM "crossing_clk_i" TO "crossing_pxl_clk" TIG ;
-
+NET "vga_pclk" TNM_NET = "crossing_vga_pclk";
+NET "wb_clk" TNM_NET = "crossing_wb_clk";
+TIMESPEC TS_xdomain = FROM "crossing_wb_clk" TO "crossing_vga_pclk" TIG ;
 
 
 ##################################################################################################

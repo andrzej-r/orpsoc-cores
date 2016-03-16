@@ -77,6 +77,7 @@ module wb_bfm_memory
 	    bfm0.error_response();
 	 end else begin
 	    if(bfm0.op === WRITE) begin
+               //@(posedge wb_clk_i);
 	       bfm0.write_ack(data);
 	       if(DEBUG) $display("%d : ram Write 0x%h = 0x%h %b", $time, address, data, bfm0.mask);
 	       for(i=0;i < 4; i=i+1)
